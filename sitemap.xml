@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+<loc>http://localhost:4000/PeInfection/</loc>
+<lastmod>2018-08-12T04:51:01-07:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/productiondrgctf/</loc>
+<lastmod>2018-10-08T04:51:01-07:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/kernelexploitationbasic/</loc>
+<lastmod>2019-08-13T04:51:01-07:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/browser-exploitation-chakra/</loc>
+<lastmod>2019-11-25T04:51:01-07:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/</loc>
+</url>
+<url>
+<loc>http://localhost:4000/tags/</loc>
+</url>
+</urlset>
