@@ -1,4 +1,62 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en-US"><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://wes4m.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://wes4m.io/" rel="alternate" type="text/html" hreflang="en-US" /><updated>2020-12-19T15:01:05-07:00</updated><id>https://wes4m.io/feed.xml</id><title type="html">wes4m’s Blog</title><subtitle>Blogging about security and things</subtitle><author><name>wes4m</name></author><entry xml:lang="AR"><title type="html">إستغلال ثغرات المتصفح Webbrowser exploitation</title><link href="https://wes4m.io/browser-exploitation-chakra/" rel="alternate" type="text/html" title="إستغلال ثغرات المتصفح Webbrowser exploitation" /><published>2019-11-25T04:51:01-07:00</published><updated>2019-11-25T04:51:01-07:00</updated><id>https://wes4m.io/browser-exploitation-chakra</id><content type="html" xml:base="https://wes4m.io/browser-exploitation-chakra/">&lt;blockquote&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en-US"><generator uri="https://jekyllrb.com/" version="3.8.7">Jekyll</generator><link href="https://wes4m.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://wes4m.io/" rel="alternate" type="text/html" hreflang="en-US" /><updated>2020-12-27T17:47:26-07:00</updated><id>https://wes4m.io/feed.xml</id><title type="html">wes4m’s Blog</title><subtitle>Blogging about security and things</subtitle><author><name>wes4m</name></author><entry xml:lang="EN"><title type="html">Fuzzing, Emulation, and Random low-level fun #1</title><link href="https://wes4m.io/random-fun-intro/" rel="alternate" type="text/html" title="Fuzzing, Emulation, and Random low-level fun #1" /><published>2020-12-27T03:49:01-07:00</published><updated>2020-12-27T03:49:01-07:00</updated><id>https://wes4m.io/random-fun-intro</id><content type="html" xml:base="https://wes4m.io/random-fun-intro/">&lt;p&gt;As the &lt;strong&gt;amazing&lt;/strong&gt; year of 2020 comes to an end, I thought that this is the right time for me to start thinking about how to get involved in areas I have always been interested in but never put enough time and effort into.  Basically, this is going to be a hands-on semi random blog post series of exploring mostly low-level computer science and security topics. The plan is to have no rigid plan, go by interest, and to have fun. This first post is just laying out a possible timeline of the topics and ideas I will be going through and will later be updated to link the specific blog posts.&lt;/p&gt;
+
+&lt;h2 id=&quot;fuzzing&quot;&gt;Fuzzing&lt;/h2&gt;
+
+&lt;p&gt;Not web applications fuzzing. I have always been interested in fuzzing. Whenever reading a writeup of some mind-blowing RCE the common entry point for that bug, or chain of bugs is usually fuzzing. I’ve done some fuzzing but not enough. So ..&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Let’s build a fuzzer, or multiple fuzzers?, and incremntally optimize it.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Building a fuzzer will be fun, but what fun with no bugs. Before trying to choose a target. I wanted to re-discover a previously known exploitable CVE through fuzzing,  Then, create an exploit for it.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Re-discovering a bug, and writing an exploit for it.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;At this point I’d hope that I’ve made a few blog posts and gained a better understanding of fuzzers. Before continuing with fuzzers though, I will take a quick detour and comeback to them later.&lt;/p&gt;
+
+&lt;h2 id=&quot;emulation&quot;&gt;Emulation&lt;/h2&gt;
+
+&lt;p&gt;Emulation can be a very useful tool for fuzzing. As sometimes you want to fuzz a black-box target, a kernel, or something running on a different arch. However, this is just an execuse to make an emulator. I have always wanted to make an emulator for a simple archictucture.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Making an emulator for something (NES?, idk will choose later).&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I know that &lt;a href=&quot;https://github.com/google/AFL&quot;&gt;AFL&lt;/a&gt; has a &lt;a href=&quot;https://github.com/qemu/qemu&quot;&gt;QEMU&lt;/a&gt; mode (user only) for black-box targets. So while we’re at it with emulators. Let’s learn some stuff about QEMU, and maybe modify AFL to fuzz a binary running inside an emulated OS.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Modify AFL, QEMU to fuzz a black-box target in a different OS (SerenityOS?)&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;strong&gt;I like SerenityOS and have learned a lot from Andreas Kling (&lt;a href=&quot;https://twitter.com/awesomekling&quot;&gt;@awesomekling&lt;/a&gt;) videos, so why not :D&lt;/strong&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;fuzzing-part-2-goal&quot;&gt;Fuzzing part 2 (goal)&lt;/h2&gt;
+
+&lt;p&gt;in the second part of fuzzing, also known as finding a previously unknown exploitable bug through fuzzing (0-Day), and writing an exploit for it. I will try to do what it exactly says. I expect this to be the hardest part and I’m considering it a goal for 2021. The target doesn’t have to be big. The main reason I think this will be hard is because I struggle with choosing a target just for the sake of finding a bug. I usually find bugs in a target when I’m exploring it for a specific reason.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Find a bug in “something” through fuzzing, and write an exploit for it.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;hypervisors&quot;&gt;Hypervisors&lt;/h2&gt;
+
+&lt;p&gt;Just putting this one out here. I want to learn more about hypervisors and make a simple one.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Making a hypervisor.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;This is it for now. Ideas could change, get extended, and more ideas might be added. Here hoping for a better year, plz 2021 🙏, and more learning.&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+  &lt;img src=&quot;https://media1.tenor.com/images/5b04f7e51bd8659b985b8aa4f86ffedc/tenor.gif?itemid=4472291&quot; /&gt;
+&lt;/p&gt;</content><author><name>wes4m</name></author><category term="misc" /><summary type="html">As the amazing year of 2020 comes to an end, I thought that this is the right time for me to start thinking about how to get involved in areas I have always been interested in but never put enough time and effort into. Basically, this is going to be a hands-on semi random blog post series of exploring mostly low-level computer science and security topics. The plan is to have no rigid plan, go by interest, and to have fun. This first post is just laying out a possible timeline of the topics and ideas I will be going through and will later be updated to link the specific blog posts.</summary></entry><entry xml:lang="AR"><title type="html">إستغلال ثغرات المتصفح Webbrowser exploitation</title><link href="https://wes4m.io/browser-exploitation-chakra/" rel="alternate" type="text/html" title="إستغلال ثغرات المتصفح Webbrowser exploitation" /><published>2019-11-25T04:51:01-07:00</published><updated>2019-11-25T04:51:01-07:00</updated><id>https://wes4m.io/browser-exploitation-chakra</id><content type="html" xml:base="https://wes4m.io/browser-exploitation-chakra/">&lt;blockquote&gt;
   &lt;p&gt;تنويه: إستغلال ثغرات المتصفحات ليس من إختصاصي إنما هذه السلسلة عبارة عن تدوين مستمر لطريقي في خوض هذا المجال وتعزيز لفهمي. أي اغلاط او اضافات أكون شاكر لكم.
 ملاحظة: إطلاع سابق وفهم كيفية عمل لغات البرمجة. والـ Interpreters بشكل سطحي مهمة جدآ لهذا الموضوع.&lt;/p&gt;
 &lt;/blockquote&gt;
