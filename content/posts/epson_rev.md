@@ -1,7 +1,7 @@
 ---
 title: "Reverse engineering thermal printers"
 date: 2022-09-02T21:29:19+03:00
-draft: true
+draft: false
 description: ""
 # weight: 1
 # aliases: ["/first"]
