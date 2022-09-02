@@ -1,0 +1,97 @@
+baseURL: "https://wes4m.io/"
+title: wes4m
+paginate: 5
+theme: hugo-PaperMod
+
+enableRobotsTXT: true
+buildDrafts: false
+buildFuture: false
+buildExpired: false
+
+googleAnalytics: G-X4Z7CWYY5B
+
+minify:
+  disableXML: true
+  minifyOutput: true
+
+outputs:
+  home:
+      - HTML
+      - RSS
+
+params:
+  # to enable google analytics, opengraph, twitter-cards and schema.
+  env: production 
+
+  title: wes4m
+  description: "Blogging about cybersecurity, CTFs, dev and stuff"
+  keywords: [Blog, Portfolio, Cybersecurity, CTF, Reverse Engineering, PWN, WEB, Dev, Development]
+  DateFormat: "January 2, 2006"
+
+  # dark, light
+  defaultTheme: auto
+  disableThemeToggle: false
+
+  assets:
+    # disableHLJS: true # to disable highlight.js
+    # disableFingerprinting: true
+    # favicon: "<link / abs url>"
+    # favicon16x16: "<link / abs url>"
+    # favicon32x32: "<link / abs url>"
+    # apple_touch_icon: "<link / abs url>"
+    # safari_pinned_tab: "<link / abs url>"
+
+  label:
+    # Home page title
+    text: "./"
+    # icon: /apple-touch-icon.png
+    # iconHeight: 35
+
+  # profile-mode
+  profileMode:
+    # needs to be explicitly set
+    enabled: false
+
+  # home-info mode
+  homeInfoParams:
+    Title: "wes4m"
+    Content: "Blogging about cybersecurity, CTFs, dev and stuff"
+
+  socialIcons:
+    - name: twitter
+      url: "https://twitter.com/zawessam"
+    - name: github
+      url: "https://github.com/wes4m"
+
+  cover:
+    # hide everywhere but not in structured data
+    hidden: true
+    # hide on list pages and home
+    hiddenInList: true
+    # hide on single page
+    hiddenInSingle: true
+
+  editPost:
+    URL: "https://github.com/wes4m/wes4m.github.io/tree/drafting/content"
+    # edit text
+    Text: "Suggest Changes"
+    # to append file path to Edit link
+    appendFilePath: true
+    
+menu:
+  main:
+    - identifier: tags
+      name: Tags
+      url: /tags/
+      weight: 10
+
+# Read: https://github.com/adityatelange/hugo-PaperMod/wiki/FAQs#using-hugos-syntax-highlighter-chroma
+pygmentsUseClasses: true
+markup:
+  highlight:
+    noClasses: false
+    # anchorLineNos: true
+    # codeFences: true
+    # guessSyntax: true
+    # lineNos: true
+    # style: monokai

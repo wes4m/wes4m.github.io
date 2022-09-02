@@ -1,0 +1,3 @@
+[submodule "themes/hugo-PaperMod"]
+	path = themes/hugo-PaperMod
+	url = git@github.com:wes4m/hugo-PaperMod.git
