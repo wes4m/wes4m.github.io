@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Kernel on wes4m</title>
+    <link>https://wes4m.io/tags/kernel/</link>
+    <description>Recent content in Kernel on wes4m</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Tue, 13 Aug 2019 04:51:01 -0700</lastBuildDate><atom:link href="https://wes4m.io/tags/kernel/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>إستغلال ثغرات النواة | Kernel exploitation</title>
+      <link>https://wes4m.io/posts/kernel_exploitation/</link>
+      <pubDate>Tue, 13 Aug 2019 04:51:01 -0700</pubDate>
+      
+      <guid>https://wes4m.io/posts/kernel_exploitation/</guid>
+      <description>من اكثر الامثلة شيوعآ للإستخدام في هذا الموضوع هي مصطلحات مثل Android rooting, IOS Jailbreak ، فالكثير منا على إطلاع بها وبالغرض منها. ولكن هل تسائلت من قبل كيف تعمل في عمقها ؟
+أيضآ لماذا لايمكنك إنهاء عمليات الـ Anti virus من مدير المهام في نظام وندوز بكل بساطة ؟ أو كيف تخفي بعض ملفات الإختراق نفسها عن برامج تتبع الإتصالات ومدير المهام وغيره.
+كل هذه الإمور والكثير من الأمثلة الإخرى يمكن تنفيذها بعدة طرق أحدها ومن أهمها هي إستخدام نواة النظام وإستغلالها.</description>
+    </item>
+    
+  </channel>
+</rss>

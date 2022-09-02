@@ -1,29 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>wes4m</title>
-    <link>https://wes4m.io/</link>
-    <description>Recent content on wes4m</description>
+    <title>PWN on wes4m</title>
+    <link>https://wes4m.io/tags/pwn/</link>
+    <description>Recent content in PWN on wes4m</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Sun, 27 Dec 2020 03:49:01 -0700</lastBuildDate><atom:link href="https://wes4m.io/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Fuzzing, Emulation, and Random low-level fun #1</title>
-      <link>https://wes4m.io/posts/random_fun/</link>
-      <pubDate>Sun, 27 Dec 2020 03:49:01 -0700</pubDate>
-      
-      <guid>https://wes4m.io/posts/random_fun/</guid>
-      <description>As the amazing year of 2020 comes to an end, I thought that this is the right time for me to start thinking about how to get involved in areas I have always been interested in but never put enough time and effort into. Basically, this is going to be a hands-on semi random blog post series of exploring mostly low-level computer science and security topics. The plan is to have no rigid plan, go by interest, and to have fun.</description>
-    </item>
-    
-    <item>
-      <title>إستغلال ثغرات المتصفح | Webbrowser exploitation</title>
-      <link>https://wes4m.io/posts/browser_exploitation/</link>
-      <pubDate>Mon, 25 Nov 2019 04:51:01 -0700</pubDate>
-      
-      <guid>https://wes4m.io/posts/browser_exploitation/</guid>
-      <description>Part 1</description>
-    </item>
-    
+    <lastBuildDate>Tue, 13 Aug 2019 04:51:01 -0700</lastBuildDate><atom:link href="https://wes4m.io/tags/pwn/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>إستغلال ثغرات النواة | Kernel exploitation</title>
       <link>https://wes4m.io/posts/kernel_exploitation/</link>
@@ -44,16 +26,6 @@
       <description>من مشاركتي مع فريق @Shellphish إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة والمليئة بالمعلومات.
 سأقوم بشرح لطريقة حل التحدي وشرح المعلومات المهمة في الحل
 صورة من التحدي لمن ليس لديه معلومات ماهي تحديات CTF , Capture the flag هي طريقة ممتعة ومن أفضل الطرق بل أعتبرها في نظري من أهم الطرق في تعلم طرق الإختراق والهندسة العكسية والتشفير وغيرها من عمليات أساسية في الأمن السيبراني لمعلومات أكثر يمكنك قراءة شرح ممتاز من هنا</description>
-    </item>
-    
-    <item>
-      <title>آلية عمل | PE Infection</title>
-      <link>https://wes4m.io/posts/pe_infection/</link>
-      <pubDate>Sun, 12 Aug 2018 04:51:01 -0700</pubDate>
-      
-      <guid>https://wes4m.io/posts/pe_infection/</guid>
-      <description>توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة. طرق الحماية في نهاية المقال. كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.
-ماهي عدوى الملفات التنفيذية أو PE Infection هي من أقدم الطرق المستخدمة في نشر الملفات الخبيثة من باك دورز أو فايروسات وغيره في الجهاز.</description>
     </item>
     
   </channel>

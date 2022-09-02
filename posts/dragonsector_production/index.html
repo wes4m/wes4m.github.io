@@ -1,0 +1,266 @@
+<!doctype html><html lang=en dir=auto>
+<head><meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
+<meta name=robots content="index, follow">
+<title>حل تحدي Production - DragonCTF | wes4m</title>
+<meta name=keywords content="CTF,Linux,PWN,Misc">
+<meta name=description content="من مشاركتي مع فريق @Shellphish إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة والمليئة بالمعلومات.
+سأقوم بشرح لطريقة حل التحدي وشرح المعلومات المهمة في الحل
+صورة من التحدي لمن ليس لديه معلومات ماهي تحديات CTF , Capture the flag هي طريقة ممتعة ومن أفضل الطرق بل أعتبرها في نظري من أهم الطرق في تعلم طرق الإختراق والهندسة العكسية والتشفير وغيرها من عمليات أساسية في الأمن السيبراني لمعلومات أكثر يمكنك قراءة شرح ممتاز من هنا">
+<meta name=author content="wes4m">
+<link rel=canonical href=https://wes4m.io/posts/dragonsector_production/>
+<link crossorigin=anonymous href=/assets/css/stylesheet.c266585e349dd9ce670351e0239f03ee0ebc4ca57cc47e0fd0d98f00e50aee7e.css integrity="sha256-wmZYXjSd2c5nA1HgI58D7g68TKV8xH4P0NmPAOUK7n4=" rel="preload stylesheet" as=style>
+<script defer crossorigin=anonymous src=/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG+9vmJ0cTS+ovo0FeA=" onload=hljs.initHighlightingOnLoad()></script>
+<link rel=icon href=https://wes4m.io/favicon.ico>
+<link rel=icon type=image/png sizes=16x16 href=https://wes4m.io/favicon-16x16.png>
+<link rel=icon type=image/png sizes=32x32 href=https://wes4m.io/favicon-32x32.png>
+<link rel=apple-touch-icon href=https://wes4m.io/apple-touch-icon.png>
+<link rel=mask-icon href=https://wes4m.io/safari-pinned-tab.svg>
+<meta name=theme-color content="#2e2e33">
+<meta name=msapplication-TileColor content="#2e2e33">
+<noscript>
+<style>#theme-toggle,.top-link{display:none}</style>
+<style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--hljs-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51)}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style>
+</noscript>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-X4Z7CWYY5B"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-X4Z7CWYY5B',{anonymize_ip:!1})}</script>
+<meta property="og:title" content="حل تحدي Production - DragonCTF">
+<meta property="og:description" content="من مشاركتي مع فريق @Shellphish إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة والمليئة بالمعلومات.
+سأقوم بشرح لطريقة حل التحدي وشرح المعلومات المهمة في الحل
+صورة من التحدي لمن ليس لديه معلومات ماهي تحديات CTF , Capture the flag هي طريقة ممتعة ومن أفضل الطرق بل أعتبرها في نظري من أهم الطرق في تعلم طرق الإختراق والهندسة العكسية والتشفير وغيرها من عمليات أساسية في الأمن السيبراني لمعلومات أكثر يمكنك قراءة شرح ممتاز من هنا">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wes4m.io/posts/dragonsector_production/">
+<meta property="og:image" content="https://wes4m.io/%3Cimage%20path/url%3E"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2018-10-08T04:51:01-07:00">
+<meta property="article:modified_time" content="2018-10-08T04:51:01-07:00"><meta property="og:site_name" content="wes4m">
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:image content="https://wes4m.io/%3Cimage%20path/url%3E">
+<meta name=twitter:title content="حل تحدي Production - DragonCTF">
+<meta name=twitter:description content="من مشاركتي مع فريق @Shellphish إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة والمليئة بالمعلومات.
+سأقوم بشرح لطريقة حل التحدي وشرح المعلومات المهمة في الحل
+صورة من التحدي لمن ليس لديه معلومات ماهي تحديات CTF , Capture the flag هي طريقة ممتعة ومن أفضل الطرق بل أعتبرها في نظري من أهم الطرق في تعلم طرق الإختراق والهندسة العكسية والتشفير وغيرها من عمليات أساسية في الأمن السيبراني لمعلومات أكثر يمكنك قراءة شرح ممتاز من هنا">
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://wes4m.io/posts/"},{"@type":"ListItem","position":2,"name":"حل تحدي Production - DragonCTF","item":"https://wes4m.io/posts/dragonsector_production/"}]}</script>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"حل تحدي Production - DragonCTF","name":"حل تحدي Production - DragonCTF","description":"من مشاركتي مع فريق @Shellphish إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة والمليئة بالمعلومات.\nسأقوم بشرح لطريقة حل التحدي وشرح المعلومات المهمة في الحل\nصورة من التحدي لمن ليس لديه معلومات ماهي تحديات CTF , Capture the flag هي طريقة ممتعة ومن أفضل الطرق بل أعتبرها في نظري من أهم الطرق في تعلم طرق الإختراق والهندسة العكسية والتشفير وغيرها من عمليات أساسية في الأمن السيبراني لمعلومات أكثر يمكنك قراءة شرح ممتاز من هنا","keywords":["CTF","Linux","PWN","Misc"],"articleBody":"من مشاركتي مع فريق @Shellphish إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة والمليئة بالمعلومات.\nسأقوم بشرح لطريقة حل التحدي وشرح المعلومات المهمة في الحل\nصورة من التحدي لمن ليس لديه معلومات ماهي تحديات CTF , Capture the flag هي طريقة ممتعة ومن أفضل الطرق بل أعتبرها في نظري من أهم الطرق في تعلم طرق الإختراق والهندسة العكسية والتشفير وغيرها من عمليات أساسية في الأمن السيبراني لمعلومات أكثر يمكنك قراءة شرح ممتاز من هنا\nالتحدي بداية أشجعك على محاولة حل التحدي بنفسك. الوقت المحدد للـ CTF قد إنتهى لكن السيرفر لازال يعمل من هنا\nnc lyrics.hackable.software 4141 في حال تعطل السيرفر أو إغلاقه ورغبتك في إكمال التحدي يمكنك عمل كومبايل للكود بإستخدام g++ وتأكد من إضافة فلاق NDBG- ثم إستخدم netcat مع فلاق e- لتنفيذ الإتصال على جهازك\nكود التحدي  الحل نبدأ بتجربة سريعة على السيرفر بناءَ على الأوامر الموجودة في الكود\n نلاحظ من تجربة عشوائية بأن طريقة عرض السيرفر للبيانات هي عبارة عن ملفات بحيث عند طلب عرض الفرق bands يقوم بعرض قائمة بالفرق والتي هي عبارة عن مجلدات وعند طلب قائمة الأغاني يقوم بسؤالك عن إسم الفرقة. في هذه الحالة هو فعليآ إسم المجلد لذلك عند وضع “..” مكان إسم الفرقة قام بعرض الملفات الموجودة بالخلف والتي بدورها تحتوي على ملف العلم\nنلاحظ أيضا أن طريقة عمل الكود هي بفتح الملف ثم قراءته وعرض محتواه لذلك يتضح لنا أنه بإمكاننا قراءة ملف العلم وحل التحدي بكل بساطة\nولكن! هذه نتيجة محاولة فتح ملف العلم بعد قراءة كود السيرفر عدة مرات بحثآ عن طريقة لقراءة العلم نلاحظ وجود ثغرة تمكننا من تسريب بيانات من ملف آخر في الفنكشن التالي\n يعمل السيرفر عن طريق قراءة سطر من كلمات إغنية محددة في كل مرة نقوم بإرسال أمر read ولكن عن وصوله لنهاية الملف ستقوم الفنكشن بإرجاع -1 وبدورها سنتمكن من إستغلال هذه النقطة في :\n تقوم الفنكشن بالتأكد من أن عدد البايتات التي تم قراءتها أكبر من صفر ثم التأكد من عدم وجود كلمة DrgnS في البيانات وهي جزء من العلم بحيث حتى لو تمكنا من قراءة العلم ستوقفنا الفنكشن بمجرد قراءتها لهذه الكلمة وهذا عائق اخر. ولكن اذا قمنا بقراءة أحد ملفات الأغاني الى ماقبل نهايته ثم قمنا بقراءة ملف العلم ستقوم الفنكشن بوضع بايتات العلم في الذاكرة الموجودة buffer وستتوقف عند قراءتها لكلمة DrgnS لكن لن يتم إغلاق الإتصال بدورنا يمكننا بعد ذلك قراءة اخر سطر متبقي من الإغنية فستقوم الفنكشن بإرجاع -1 بدورها ستتجاوز شرط التأكد من الكلمة وستقوم بطباعة البفر بالكامل محتويا على بيانات سابقة بدون تصفير البفر uninitialized memory\nيمكنك عمل كومبايل للكود وصنع ملف علم وهمي بإسم آخر للتأكد من أنك ستتمكن من قراءه بهذه الطريقة. الآن أصبح لدينا طريقة لقراءة العلم متجاوزين أحد العوائق وهي التأكد من كلمة DrgnS ولكن لازلنا عالقين. لأنه من الأساس لن نستطيع من فتح الملف flag لقراءة محتواه بسبب وجود شرط يوقفنا من ذلك\nبحثآ عن طريقة لفتح الملف نلاحظ وجود حد أقصى لبعض الأمور في بداية الكود عن طريق دالة setrlimit وهي دالة مهمة في نظام لينكس تقوم بتحديد الريسورس المتوفرة لعملية محددة وتتحكم فيها النواة لمعلومات أكثر https://www.gnu.org/software/libc/manual/html_node/Limits-on-Resources.html\n أهمها هوRLIMIT_NOFILE فهذا يضع حد أقصى لعدد الملفات التي يمكن للعملية فتحها يتم تحديد الحد بناءا على عدد الـ file descriptors (fd) المفتوحة وهو أمر سيتم شرحه لاحقآ في الموضوع ولكن يوجد حد أقصى آخر غير مرتبط بعدد الـ fd الحد الأقصى هنا هو 32 ولكن يوجد شرط آخر في الكود\nstatic bool open_lyrics() { // Don't allow opening too many lyrics at once.  if (globals::records.size() = 16) { return false; } هنا حد آخر يجعل الحد الأقصى ١٦ ملف فقط بعد بحث وتجربة عدة ثغرات وطرق للتمكن من فتح الملف نلاحظ وجود ثغرة هنا بحيث لو تمكنا من فتح ملف symbolic link سيتم فتحه وإظهار رسالة خطأ ولكن سيتم إعادة true بدون إغلاق الإتصال وأيضا لن يتم إغلاق الملف\n في نظام لينكس هو ملف يقوم بإيصالك مباشرة بملف آخر بنفس مبدأ ملفات shortcut في نظام وندوز symbolic link\nيعمل نظام لينكس بمايسمى file descriptors وهو رقم يتم وضعه لكل ملف تقوم العملية بفتحه عن طريق open ويمكنك تطبيق عمليات على ملف محدد عن طريق رقمه مثل read, write ومعاملة بعض أجزاء النظام كملفات هي جزء من فلسفة نظام لينكس فأيضا عند بدء عملية مرتبطة بالترمنل tty في لينكس يقوم النظام بفتح ثلاث streams وتخزين file descriptors لكل واحد منهم وهم\n0: stdin 1: stdout 2: stderr فعند إستدعاء دالة read على الـ fd 0 هي بالضبط عملية إدخال بيانات من المستخدم للعملية وكذلك عند عمل write للـ fd 1 هي عملية إخراج أو طباعة بيانات للمستخدم من العملية.\nبعد بحث مطول عن ملف symbolic link محاولين تنفيذ الثغرة لفتح ملف بدون إغلاقه لن تتمكن من الوصول لأي ملف على النظام نظرا لشروط تحبط عمليات الـ path traversal مثل محاولات البحث عن طريق إستخدام “\" أو \" ..\" وغيرها وهي إستغلال مناسب في هذه الحالات نظرآ لأنه يتم وضع مدخلات المستخدم مع مسار الملف للوصل لمكان محدد ولكن المبرمج هنا قام بالحماية من هذه الهجمات عن طريق عمل فنكشن يقوم بالتحقق من مدخلات المستخدم sanitize_path لذلك لابد من وجود طريق آخر\nماذا لو قمنا بتجاوز الحد الأقصى للمفات التي يمكننا فتحها عند ذلك بكل تأكيد ستعيد الفنكشن فشل في فتح الملف وبذلك سيعتقد الشرط بأننا قمنا بمحاولة فتح ملف sym link ولكن يوجد شرط يقف في طريقنا فلن نتمكن من فتح ٣٢ ملف بسبب شرط الـ ١٦ ملف\nفكيف يمكن تجاوزه ؟ نلاحظ وجود بعض شروط الـ assertions في الكود وهي شروط يتم وضعها لعمل testing للكود في حالة الـ developemnt ولكن من قراءة وصف التحدي والإسم توجد تلميحة فتنقسم عادة المشاريع البرمجية الى مرحلتين developemt, production في وقت الـ production يقوم الكومبايل بحذف جميع شروط الـ assert\nبذلك نحصل على ثغرة غير ملحوظة. فشرط الـ ١٦ ملف يقوم بالتأكد عن طريق قياس حجم الفيكتور الذي تقوم العملية بزيادته عند فتح كل ملف بشكل رسمي ولكن. لو تمكنا من فتح الملف بشكل غير رسمي عن طريق إستغلال ثغرة الـ assert في أحد الشروط الموجودة سنتمكن من فتح أكثر من ١٦ ملف حتى يوقفنا شرط الـ ٣٢ وتكمن هنا\nassert(close(globals::records[idx]) == 0); بنفس شرط فحص الملف لوجود DrgnS سيتم إغلاق الملف بداخل assert وطباعة الخطأ ولكن. بما أنه تم إصدار الملف بكومبايلر في حالة production سيتم حذف هذا السطر من الكود. مما يمكننا من فتح ملفات عدة بشرط إن يحتوي الملف على كلمة DrgnS ليتم تنفيذ هذه المنطقة من الكود\nبعد بحث في جميع كلمات الأغاني الموجود فالسيرفر لن تجد أي ملف يحتوي على هذه الكلمة ولكن. يمكنك ملاحظة سورس السيرفر موجود وهو أيضا يحتوي على الكلمة DrgnS يمكنك فتح العملية مرات عدة ولكن ستلاحظ توقف السيرفر فجأة وذلك بسبب حد أقصى اخر وهو حجم المخرجات\nrlim.rlim_cur = rlim.rlim_max = 64 * 1024; setrlimit(RLIMIT_FSIZE, \u0026rlim); في محاولة إخرى نرى وجود عملية السيرفر التنفيذية أيضا موجودة والذي بدوره يحتوي على كلمة DrgnS وحجمه أصغر يمكننا إستغلاله لتنفيد نفس العملية متجاوزين شرط الحجم\nأيضا نلاحظ وجود حد أقصى اخر وهو\nrlim.rlim_cur = rlim.rlim_max = 2; setrlimit(RLIMIT_CPU, \u0026rlim); والذي سيحدد وقت لإستخدامنا لمواد السيرفر سنقوم بقراءة ملفات على شكل سطر في كل مرة مما ينتج عنه وقت طويل يؤدي لتجاوز هذا الحد بدوره سيغلق السيرفر الإتصال لتجاوز هذا الحد سنقوم بإستخدام أقل الملفات حجما\nتنظيم الأفكار بعد العثور على عدة ثغرات تمكننا من جمعها مع بعض للوصل للهدف المطلوب يمكننا الآن ترتيب أفكارنا والبدء بالإستغلال\nلدينا 3 file descriptors يقوم النظام بفتحها بشكل أساسي الخطوة الإولى فتح ملف أحد الأغاني حتى ماقبل الحد الأقصى ١٥ مرة الخطوة الثانية نبدأ بفتح ملف السيرفر ١٣ مرة ونقرأه حتى نصل لكلمة DrgnS بذلك لن يتم إغلاقه وسيتم في كل مرة زيادة عدد الملفات المفتوحة الخطوة الثالثة الآن مجموع الملفات المفتوحة 3 + 15 + 13 = 31 يمكننا الآن البدء بقراءة أحد ملفات الإغنية حتى اخر سطر ونتوقف الخطوة الرابعة نظرآ لعدم زيادة العدد رسميآ يمكننا فتح ملف اخر للوصل ل ١٦ وذلك الملف سيكون هو ملف العلم سيتم فتح الملف عند السطر الأول لدالة open الآن أصبح لدينا ٣٢ ملف مفتوح وصلنا للحد الأقصى لذلك الإستدعاء الثاني للدالة سيفشل متجاوز أغلاق الملف وشرط التأكد من أنه ملف العلم\n الخطوة الخامسة الآن يمكننا قراءة ملف العلم وهو رقم ١٥ ستفشل القراءة نظرا لوجود كلمة DrgnS لكن بالثغرة التي توصلنا لها تم تحميل بيانات العلم في الذاكرة وستظهر لنا رسالة خطأ الخطوة السادسة الآن يمكننا قراءة السطر مابعد الأخير من ملف الإغنية مؤديا لإرجاع -1 متجاوز شرط التأكد من وجود DrgnS وسيقوم بطباعة البفر بكامل مايحتويه ومن ضمنه بيانات العلم المحملة سابقآ\nالحل النهائي قمت بإستخدم أحد المكتبات الرائعة المبرمجة بالبايثون pwn لتسهيل الإتصال بالسيرفر وتطبيق العمليات بدون التدخل اليدوي\n حل المشكلة في الختام نرى خطورة إستخدام assert بدون حذر ودمجها مع بعض الأوامر المهمة قد يجعل الكومبايلر يتخلص منها معرضآ الملف التنفيذي لثغرات يمكن إستغلالها لاحقأ بالرغم من الشروط العديدة المصممة لمنعك من الوصول للعلم إلا أنه بمجرد وضع إستدعاء دالة إغلاق الملف خارج الـ assertion ستفشل الطريقة السابقة في الوصول له.\n","wordCount":"1430","inLanguage":"en","image":"https://wes4m.io/%3Cimage%20path/url%3E","datePublished":"2018-10-08T04:51:01-07:00","dateModified":"2018-10-08T04:51:01-07:00","author":{"@type":"Person","name":"wes4m"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://wes4m.io/posts/dragonsector_production/"},"publisher":{"@type":"Organization","name":"wes4m","logo":{"@type":"ImageObject","url":"https://wes4m.io/favicon.ico"}}}</script>
+</head>
+<body id=top>
+<script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add('dark'):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove('dark'):window.matchMedia('(prefers-color-scheme: dark)').matches&&document.body.classList.add('dark')</script>
+<header class=header>
+<nav class=nav>
+<div class=logo>
+<a href=https://wes4m.io/ accesskey=h title="./ (Alt + H)">./</a>
+<div class=logo-switches>
+<button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+</button>
+</div>
+</div>
+<ul id=menu>
+<li>
+<a href=https://wes4m.io/tags/ title=Tags>
+<span>Tags</span>
+</a>
+</li>
+</ul>
+</nav>
+</header>
+<main class=main>
+<article class=post-single>
+<header class=post-header>
+<div class=breadcrumbs><a href=https://wes4m.io/>Home</a>&nbsp;»&nbsp;<a href=https://wes4m.io/posts/>Posts</a></div>
+<h1 class=post-title dir=rtl>
+حل تحدي Production - DragonCTF
+</h1>
+<div class=post-meta dir=rtl><span title="2018-10-08 04:51:01 -0700 -0700">October 8, 2018</span>&nbsp;·&nbsp;7 min&nbsp;·&nbsp;wes4m&nbsp;|&nbsp;<a href=https://github.com/wes4m/wes4m.github.io/tree/drafting/content/posts/dragonsector_production.md rel="noopener noreferrer" target=_blank>Suggest Changes</a>
+</div>
+</header>
+<div class=post-content dir=rtl><p>من مشاركتي مع فريق <a href=https://twitter.com/shellphish>@Shellphish</a>
+إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة
+والمليئة بالمعلومات.</p>
+<p>سأقوم بشرح لطريقة حل التحدي وشرح المعلومات المهمة في الحل</p>
+<p>صورة من التحدي
+<img loading=lazy src=/images/ProductionMain.jpg alt=ProductionMain>
+</p>
+<p>لمن ليس لديه معلومات ماهي تحديات CTF , Capture the flag هي طريقة ممتعة ومن أفضل الطرق بل أعتبرها في نظري من أهم الطرق في تعلم طرق الإختراق والهندسة العكسية والتشفير وغيرها من عمليات أساسية في الأمن السيبراني
+لمعلومات أكثر يمكنك قراءة شرح ممتاز من <a href=https://majdalsharif.github.io/CTF-guide/>هنا</a></p>
+<h3 id=التحدي>التحدي<a hidden class=anchor aria-hidden=true href=#التحدي>#</a></h3>
+<p>بداية أشجعك على محاولة حل التحدي بنفسك. الوقت المحدد للـ CTF قد إنتهى لكن السيرفر لازال يعمل من هنا</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=n>nc</span> <span class=n>lyrics</span><span class=p>.</span><span class=n>hackable</span><span class=p>.</span><span class=n>software</span> <span class=mi>4141</span>
+</code></pre></div><p>في حال تعطل السيرفر أو إغلاقه ورغبتك في إكمال التحدي
+يمكنك عمل كومبايل للكود بإستخدام g++ وتأكد من إضافة فلاق NDBG-
+ثم إستخدم netcat مع فلاق e- لتنفيذ الإتصال على جهازك</p>
+<h3 id=كود-التحدي>كود التحدي<a hidden class=anchor aria-hidden=true href=#كود-التحدي>#</a></h3>
+<script src=https://gist.github.com/wes4m/e69366d9701c1178c73fb5d5d7e4de44.js></script>
+<h3 id=الحل>الحل<a hidden class=anchor aria-hidden=true href=#الحل>#</a></h3>
+<p>نبدأ بتجربة سريعة على السيرفر بناءَ على الأوامر الموجودة في الكود</p>
+<script src=https://gist.github.com/wes4m/b9da12b46d0235be8779a3ba769fcfca.js></script>
+<p><img loading=lazy src=/images/console.jpg alt=console>
+</p>
+<p>نلاحظ من تجربة عشوائية بأن طريقة عرض السيرفر للبيانات هي عبارة عن ملفات
+بحيث عند طلب عرض الفرق bands يقوم بعرض قائمة بالفرق والتي هي عبارة عن مجلدات
+وعند طلب قائمة الأغاني يقوم بسؤالك عن إسم الفرقة. في هذه الحالة هو فعليآ إسم المجلد لذلك عند وضع &ldquo;..&rdquo; مكان إسم الفرقة قام بعرض الملفات الموجودة بالخلف والتي بدورها تحتوي على ملف العلم</p>
+<p>نلاحظ أيضا أن طريقة عمل الكود هي بفتح الملف ثم قراءته وعرض محتواه لذلك يتضح لنا أنه بإمكاننا قراءة ملف العلم وحل التحدي بكل بساطة</p>
+<p>ولكن!
+<img loading=lazy src=/images/whenOpenFlag.jpg alt=whenOpenFlag>
+</p>
+<p>هذه نتيجة محاولة فتح ملف العلم
+بعد قراءة كود السيرفر عدة مرات بحثآ عن طريقة لقراءة العلم
+نلاحظ وجود ثغرة تمكننا من تسريب بيانات من ملف آخر في الفنكشن التالي</p>
+<script src=https://gist.github.com/wes4m/d305910ace780c88fcb6ce81a7ccc393.js></script>
+<p>يعمل السيرفر عن طريق قراءة سطر من كلمات إغنية محددة في كل مرة نقوم بإرسال أمر read ولكن عن وصوله لنهاية الملف ستقوم الفنكشن بإرجاع -1 وبدورها سنتمكن من إستغلال هذه النقطة في :</p>
+<script src=https://gist.github.com/wes4m/15757fbfce5789f3613b7a7fc86d76f1.js></script>
+<p>تقوم الفنكشن بالتأكد من أن عدد البايتات التي تم قراءتها أكبر من صفر ثم التأكد من عدم وجود كلمة DrgnS في البيانات وهي جزء من العلم
+بحيث حتى لو تمكنا من قراءة العلم ستوقفنا الفنكشن بمجرد قراءتها لهذه الكلمة وهذا عائق اخر. ولكن
+اذا قمنا بقراءة أحد ملفات الأغاني الى ماقبل نهايته ثم قمنا بقراءة ملف العلم
+ستقوم الفنكشن بوضع بايتات العلم في الذاكرة الموجودة buffer وستتوقف عند قراءتها لكلمة DrgnS لكن لن يتم إغلاق الإتصال
+بدورنا يمكننا بعد ذلك قراءة اخر سطر متبقي من الإغنية فستقوم الفنكشن بإرجاع -1 بدورها ستتجاوز شرط التأكد من الكلمة وستقوم بطباعة البفر بالكامل محتويا على بيانات سابقة بدون تصفير البفر uninitialized memory</p>
+<p>يمكنك عمل كومبايل للكود وصنع ملف علم وهمي بإسم آخر للتأكد من أنك ستتمكن من قراءه بهذه الطريقة.
+الآن أصبح لدينا طريقة لقراءة العلم متجاوزين أحد العوائق وهي التأكد من كلمة DrgnS
+ولكن لازلنا عالقين. لأنه من الأساس لن نستطيع من فتح الملف flag لقراءة محتواه بسبب وجود شرط يوقفنا من ذلك</p>
+<p>بحثآ عن طريقة لفتح الملف نلاحظ وجود حد أقصى لبعض الأمور في بداية الكود
+عن طريق دالة setrlimit
+وهي دالة مهمة في نظام لينكس تقوم بتحديد الريسورس المتوفرة لعملية محددة وتتحكم فيها النواة
+لمعلومات أكثر
+<a href=https://www.gnu.org/software/libc/manual/html_node/Limits-on-Resources.html>https://www.gnu.org/software/libc/manual/html_node/Limits-on-Resources.html</a></p>
+<script src=https://gist.github.com/wes4m/42108ab1c7680b16469da317dd3101d6.js></script>
+<p>أهمها هوRLIMIT_NOFILE فهذا يضع حد أقصى لعدد الملفات التي يمكن للعملية فتحها
+يتم تحديد الحد بناءا على عدد الـ file descriptors (fd) المفتوحة وهو أمر سيتم شرحه لاحقآ في الموضوع
+ولكن يوجد حد أقصى آخر غير مرتبط بعدد الـ fd
+الحد الأقصى هنا هو 32 ولكن يوجد شرط آخر في الكود</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=k>static</span> <span class=kt>bool</span> <span class=nf>open_lyrics</span><span class=p>()</span> <span class=p>{</span>
+  <span class=c1>// Don&#39;t allow opening too many lyrics at once.
+</span><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=n>globals</span><span class=o>::</span><span class=n>records</span><span class=p>.</span><span class=n>size</span><span class=p>()</span> <span class=o>&gt;=</span> <span class=mi>16</span><span class=p>)</span> <span class=p>{</span>
+    <span class=k>return</span> <span class=nb>false</span><span class=p>;</span>
+  <span class=p>}</span>
+</code></pre></div><p>هنا حد آخر يجعل الحد الأقصى ١٦ ملف فقط
+بعد بحث وتجربة عدة ثغرات وطرق للتمكن من فتح الملف نلاحظ وجود ثغرة هنا
+بحيث لو تمكنا من فتح ملف symbolic link سيتم فتحه وإظهار رسالة خطأ ولكن سيتم إعادة true بدون إغلاق الإتصال وأيضا لن يتم إغلاق الملف</p>
+<script src=https://gist.github.com/wes4m/e928412996391207c4a52a9e4b16aeea.js></script>
+<p>في نظام لينكس هو ملف يقوم بإيصالك مباشرة بملف آخر
+بنفس مبدأ ملفات shortcut في نظام وندوز symbolic link</p>
+<p>يعمل نظام لينكس بمايسمى file descriptors
+وهو رقم يتم وضعه لكل ملف تقوم العملية بفتحه عن طريق open ويمكنك تطبيق عمليات على ملف محدد عن طريق رقمه مثل read, write
+<img loading=lazy src=/images/fd.jpg alt=fd>
+</p>
+<p>ومعاملة بعض أجزاء النظام كملفات هي جزء من فلسفة نظام لينكس
+فأيضا عند بدء عملية مرتبطة بالترمنل tty في لينكس يقوم النظام بفتح ثلاث streams وتخزين file descriptors لكل واحد منهم
+وهم<br>
+0: stdin
+1: stdout
+2: stderr
+فعند إستدعاء دالة read على الـ fd 0 هي بالضبط عملية إدخال بيانات من المستخدم للعملية
+وكذلك عند عمل write للـ fd 1 هي عملية إخراج أو طباعة بيانات للمستخدم من العملية.</p>
+<p>بعد بحث مطول عن ملف symbolic link محاولين تنفيذ الثغرة لفتح ملف بدون إغلاقه
+لن تتمكن من الوصول لأي ملف على النظام نظرا لشروط تحبط عمليات الـ path
+traversal
+مثل محاولات البحث عن طريق إستخدام &ldquo;" أو " .." وغيرها
+وهي إستغلال مناسب في هذه الحالات نظرآ لأنه يتم وضع مدخلات المستخدم مع مسار الملف للوصل لمكان محدد
+ولكن المبرمج هنا قام بالحماية من هذه الهجمات عن طريق عمل فنكشن يقوم بالتحقق من مدخلات المستخدم sanitize_path
+لذلك لابد من وجود طريق آخر</p>
+<p>ماذا لو قمنا بتجاوز الحد الأقصى للمفات التي يمكننا فتحها
+عند ذلك بكل تأكيد ستعيد الفنكشن فشل في فتح الملف وبذلك سيعتقد الشرط بأننا قمنا بمحاولة فتح ملف sym link
+ولكن يوجد شرط يقف في طريقنا فلن نتمكن من فتح ٣٢ ملف بسبب شرط الـ ١٦ ملف</p>
+<p>فكيف يمكن تجاوزه ؟
+نلاحظ وجود بعض شروط الـ assertions في الكود
+وهي شروط يتم وضعها لعمل testing للكود في حالة الـ developemnt
+ولكن من قراءة وصف التحدي والإسم توجد تلميحة
+فتنقسم عادة المشاريع البرمجية الى مرحلتين
+developemt, production
+في وقت الـ production
+يقوم الكومبايل بحذف جميع شروط الـ assert</p>
+<p>بذلك نحصل على ثغرة غير ملحوظة. فشرط الـ ١٦ ملف يقوم بالتأكد عن طريق قياس حجم الفيكتور الذي تقوم العملية بزيادته عند فتح كل ملف بشكل رسمي
+ولكن. لو تمكنا من فتح الملف بشكل غير رسمي عن طريق إستغلال ثغرة الـ assert
+في أحد الشروط الموجودة سنتمكن من فتح أكثر من ١٦ ملف حتى يوقفنا شرط الـ ٣٢
+وتكمن هنا</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c> <span class=n>assert</span><span class=p>(</span><span class=n>close</span><span class=p>(</span><span class=n>globals</span><span class=o>::</span><span class=n>records</span><span class=p>[</span><span class=n>idx</span><span class=p>])</span> <span class=o>==</span> <span class=mi>0</span><span class=p>);</span>
+</code></pre></div><p>بنفس شرط فحص الملف لوجود DrgnS
+سيتم إغلاق الملف بداخل assert وطباعة الخطأ
+ولكن. بما أنه تم إصدار الملف بكومبايلر في حالة production
+سيتم حذف هذا السطر من الكود. مما يمكننا من فتح ملفات عدة بشرط إن يحتوي الملف على كلمة DrgnS ليتم تنفيذ هذه المنطقة من الكود</p>
+<p>بعد بحث في جميع كلمات الأغاني الموجود فالسيرفر لن تجد أي ملف يحتوي على هذه الكلمة
+ولكن. يمكنك ملاحظة سورس السيرفر موجود وهو أيضا يحتوي على الكلمة DrgnS
+يمكنك فتح العملية مرات عدة ولكن ستلاحظ توقف السيرفر فجأة وذلك بسبب حد أقصى اخر
+وهو حجم المخرجات</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=n>rlim</span><span class=p>.</span><span class=n>rlim_cur</span> <span class=o>=</span> <span class=n>rlim</span><span class=p>.</span><span class=n>rlim_max</span> <span class=o>=</span> <span class=mi>64</span> <span class=o>*</span> <span class=mi>1024</span><span class=p>;</span>
+  <span class=n>setrlimit</span><span class=p>(</span><span class=n>RLIMIT_FSIZE</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>rlim</span><span class=p>);</span>
+</code></pre></div><p>في محاولة إخرى نرى وجود عملية السيرفر التنفيذية أيضا موجودة
+والذي بدوره يحتوي على كلمة DrgnS وحجمه أصغر
+يمكننا إستغلاله لتنفيد نفس العملية متجاوزين شرط الحجم</p>
+<p>أيضا نلاحظ وجود حد أقصى اخر وهو</p>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c> <span class=n>rlim</span><span class=p>.</span><span class=n>rlim_cur</span> <span class=o>=</span> <span class=n>rlim</span><span class=p>.</span><span class=n>rlim_max</span> <span class=o>=</span> <span class=mi>2</span><span class=p>;</span>
+  <span class=n>setrlimit</span><span class=p>(</span><span class=n>RLIMIT_CPU</span><span class=p>,</span> <span class=o>&amp;</span><span class=n>rlim</span><span class=p>);</span>
+</code></pre></div><p>والذي سيحدد وقت لإستخدامنا لمواد السيرفر
+سنقوم بقراءة ملفات على شكل سطر في كل مرة مما ينتج عنه وقت طويل يؤدي لتجاوز هذا الحد بدوره سيغلق السيرفر الإتصال
+لتجاوز هذا الحد سنقوم بإستخدام أقل الملفات حجما</p>
+<h3 id=تنظيم-الأفكار>تنظيم الأفكار<a hidden class=anchor aria-hidden=true href=#تنظيم-الأفكار>#</a></h3>
+<p>بعد العثور على عدة ثغرات تمكننا من جمعها مع بعض للوصل للهدف المطلوب
+يمكننا الآن ترتيب أفكارنا والبدء بالإستغلال</p>
+<p>لدينا 3 file descriptors يقوم النظام بفتحها بشكل أساسي
+الخطوة الإولى
+فتح ملف أحد الأغاني حتى ماقبل الحد الأقصى ١٥ مرة
+الخطوة الثانية نبدأ بفتح ملف السيرفر ١٣ مرة ونقرأه حتى نصل لكلمة DrgnS
+بذلك لن يتم إغلاقه وسيتم في كل مرة زيادة عدد الملفات المفتوحة
+الخطوة الثالثة
+الآن مجموع الملفات المفتوحة
+3 + 15 + 13 = 31
+يمكننا الآن البدء بقراءة أحد ملفات الإغنية حتى اخر سطر ونتوقف
+الخطوة الرابعة
+نظرآ لعدم زيادة العدد رسميآ يمكننا فتح ملف اخر للوصل ل ١٦
+وذلك الملف سيكون هو ملف العلم
+سيتم فتح الملف عند السطر الأول لدالة open
+الآن أصبح لدينا ٣٢ ملف مفتوح وصلنا للحد الأقصى
+لذلك الإستدعاء الثاني للدالة سيفشل متجاوز أغلاق الملف وشرط التأكد من أنه ملف العلم</p>
+<script src=https://gist.github.com/wes4m/f988a6c7b63853ce8bafbe177634aa10.js></script>
+<p>الخطوة الخامسة
+الآن يمكننا قراءة ملف العلم وهو رقم ١٥
+ستفشل القراءة نظرا لوجود كلمة DrgnS لكن بالثغرة التي توصلنا لها
+تم تحميل بيانات العلم في الذاكرة وستظهر لنا رسالة خطأ
+الخطوة السادسة
+الآن يمكننا قراءة السطر مابعد الأخير من ملف الإغنية مؤديا لإرجاع -1
+متجاوز شرط التأكد من وجود DrgnS وسيقوم بطباعة البفر بكامل مايحتويه
+ومن ضمنه بيانات العلم المحملة سابقآ</p>
+<h3 id=الحل-النهائي>الحل النهائي<a hidden class=anchor aria-hidden=true href=#الحل-النهائي>#</a></h3>
+<p>قمت بإستخدم أحد المكتبات الرائعة المبرمجة بالبايثون pwn
+لتسهيل الإتصال بالسيرفر وتطبيق العمليات بدون التدخل اليدوي</p>
+<script src=https://gist.github.com/wes4m/9cd3e253ce49e4982f6cac95a1ec5383.js></script>
+<h3 id=حل-المشكلة>حل المشكلة<a hidden class=anchor aria-hidden=true href=#حل-المشكلة>#</a></h3>
+<p>في الختام نرى خطورة إستخدام assert بدون حذر ودمجها مع بعض الأوامر المهمة قد يجعل الكومبايلر يتخلص منها معرضآ الملف التنفيذي لثغرات يمكن إستغلالها لاحقأ
+بالرغم من الشروط العديدة المصممة لمنعك من الوصول للعلم
+إلا أنه بمجرد وضع إستدعاء دالة إغلاق الملف خارج الـ assertion ستفشل الطريقة السابقة في الوصول له.</p>
+</div>
+<footer class=post-footer>
+<ul class=post-tags dir=rtl>
+<li><a href=https://wes4m.io/tags/ctf/>CTF</a></li>
+<li><a href=https://wes4m.io/tags/linux/>Linux</a></li>
+<li><a href=https://wes4m.io/tags/pwn/>PWN</a></li>
+<li><a href=https://wes4m.io/tags/misc/>Misc</a></li>
+</ul>
+<nav class=paginav>
+<a class=prev href=https://wes4m.io/posts/kernel_exploitation/>
+<span class=title>« Prev</span>
+<br>
+<span>إستغلال ثغرات النواة | Kernel exploitation</span>
+</a>
+<a class=next href=https://wes4m.io/posts/pe_infection/>
+<span class=title>Next »</span>
+<br>
+<span>آلية عمل | PE Infection</span>
+</a>
+</nav>
+</footer>
+</article>
+</main>
+<footer class=footer>
+<span>&copy; 2022 <a href=https://wes4m.io/>wes4m</a></span>
+<span>
+Powered by
+<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
+        <a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a>
+</span>
+</footer>
+<a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg>
+</a>
+<script>let menu=document.getElementById('menu');menu&&(menu.scrollLeft=localStorage.getItem("menu-scroll-position"),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}),document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener("click",function(b){b.preventDefault();var a=this.getAttribute("href").substr(1);window.matchMedia('(prefers-reduced-motion: reduce)').matches?document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView({behavior:"smooth"}),a==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${a}`)})})</script>
+<script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script>
+<script>document.getElementById("theme-toggle").addEventListener("click",()=>{document.body.className.includes("dark")?(document.body.classList.remove('dark'),localStorage.setItem("pref-theme",'light')):(document.body.classList.add('dark'),localStorage.setItem("pref-theme",'dark'))})</script>
+</body>
+</html>

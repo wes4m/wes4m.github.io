@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Random on wes4m</title>
+    <link>https://wes4m.io/tags/random/</link>
+    <description>Recent content in Random on wes4m</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Sun, 27 Dec 2020 03:49:01 -0700</lastBuildDate><atom:link href="https://wes4m.io/tags/random/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Fuzzing, Emulation, and Random low-level fun #1</title>
+      <link>https://wes4m.io/posts/random_fun/</link>
+      <pubDate>Sun, 27 Dec 2020 03:49:01 -0700</pubDate>
+      
+      <guid>https://wes4m.io/posts/random_fun/</guid>
+      <description>As the amazing year of 2020 comes to an end, I thought that this is the right time for me to start thinking about how to get involved in areas I have always been interested in but never put enough time and effort into. Basically, this is going to be a hands-on semi random blog post series of exploring mostly low-level computer science and security topics. The plan is to have no rigid plan, go by interest, and to have fun.</description>
+    </item>
+    
+  </channel>
+</rss>

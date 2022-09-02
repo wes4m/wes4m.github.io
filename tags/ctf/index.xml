@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>CTF on wes4m</title>
+    <link>https://wes4m.io/tags/ctf/</link>
+    <description>Recent content in CTF on wes4m</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Mon, 08 Oct 2018 04:51:01 -0700</lastBuildDate><atom:link href="https://wes4m.io/tags/ctf/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>حل تحدي Production - DragonCTF</title>
+      <link>https://wes4m.io/posts/dragonsector_production/</link>
+      <pubDate>Mon, 08 Oct 2018 04:51:01 -0700</pubDate>
+      
+      <guid>https://wes4m.io/posts/dragonsector_production/</guid>
+      <description>من مشاركتي مع فريق @Shellphish إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة والمليئة بالمعلومات.
+سأقوم بشرح لطريقة حل التحدي وشرح المعلومات المهمة في الحل
+صورة من التحدي لمن ليس لديه معلومات ماهي تحديات CTF , Capture the flag هي طريقة ممتعة ومن أفضل الطرق بل أعتبرها في نظري من أهم الطرق في تعلم طرق الإختراق والهندسة العكسية والتشفير وغيرها من عمليات أساسية في الأمن السيبراني لمعلومات أكثر يمكنك قراءة شرح ممتاز من هنا</description>
+    </item>
+    
+  </channel>
+</rss>

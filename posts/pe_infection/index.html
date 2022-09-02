@@ -1,0 +1,185 @@
+<!doctype html><html lang=en dir=auto>
+<head><meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
+<meta name=robots content="index, follow">
+<title>آلية عمل | PE Infection | wes4m</title>
+<meta name=keywords content="Malware,Windows">
+<meta name=description content="توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة. طرق الحماية في نهاية المقال. كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.
+ماهي عدوى الملفات التنفيذية أو PE Infection هي من أقدم الطرق المستخدمة في نشر الملفات الخبيثة من باك دورز أو فايروسات وغيره في الجهاز.">
+<meta name=author content="wes4m">
+<link rel=canonical href=https://wes4m.io/posts/pe_infection/>
+<link crossorigin=anonymous href=/assets/css/stylesheet.c266585e349dd9ce670351e0239f03ee0ebc4ca57cc47e0fd0d98f00e50aee7e.css integrity="sha256-wmZYXjSd2c5nA1HgI58D7g68TKV8xH4P0NmPAOUK7n4=" rel="preload stylesheet" as=style>
+<script defer crossorigin=anonymous src=/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG+9vmJ0cTS+ovo0FeA=" onload=hljs.initHighlightingOnLoad()></script>
+<link rel=icon href=https://wes4m.io/favicon.ico>
+<link rel=icon type=image/png sizes=16x16 href=https://wes4m.io/favicon-16x16.png>
+<link rel=icon type=image/png sizes=32x32 href=https://wes4m.io/favicon-32x32.png>
+<link rel=apple-touch-icon href=https://wes4m.io/apple-touch-icon.png>
+<link rel=mask-icon href=https://wes4m.io/safari-pinned-tab.svg>
+<meta name=theme-color content="#2e2e33">
+<meta name=msapplication-TileColor content="#2e2e33">
+<noscript>
+<style>#theme-toggle,.top-link{display:none}</style>
+<style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--hljs-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51)}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style>
+</noscript>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-X4Z7CWYY5B"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-X4Z7CWYY5B',{anonymize_ip:!1})}</script>
+<meta property="og:title" content="آلية عمل | PE Infection">
+<meta property="og:description" content="توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة. طرق الحماية في نهاية المقال. كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.
+ماهي عدوى الملفات التنفيذية أو PE Infection هي من أقدم الطرق المستخدمة في نشر الملفات الخبيثة من باك دورز أو فايروسات وغيره في الجهاز.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wes4m.io/posts/pe_infection/">
+<meta property="og:image" content="https://wes4m.io/%3Cimage%20path/url%3E"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2018-08-12T04:51:01-07:00">
+<meta property="article:modified_time" content="2018-08-12T04:51:01-07:00"><meta property="og:site_name" content="wes4m">
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:image content="https://wes4m.io/%3Cimage%20path/url%3E">
+<meta name=twitter:title content="آلية عمل | PE Infection">
+<meta name=twitter:description content="توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة. طرق الحماية في نهاية المقال. كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.
+ماهي عدوى الملفات التنفيذية أو PE Infection هي من أقدم الطرق المستخدمة في نشر الملفات الخبيثة من باك دورز أو فايروسات وغيره في الجهاز.">
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://wes4m.io/posts/"},{"@type":"ListItem","position":2,"name":"آلية عمل | PE Infection","item":"https://wes4m.io/posts/pe_infection/"}]}</script>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"آلية عمل | PE Infection","name":"آلية عمل | PE Infection","description":"توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة. طرق الحماية في نهاية المقال. كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.\nماهي عدوى الملفات التنفيذية أو PE Infection هي من أقدم الطرق المستخدمة في نشر الملفات الخبيثة من باك دورز أو فايروسات وغيره في الجهاز.","keywords":["Malware","Windows"],"articleBody":"توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة. طرق الحماية في نهاية المقال. كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.\nماهي عدوى الملفات التنفيذية أو PE Infection هي من أقدم الطرق المستخدمة في نشر الملفات الخبيثة من باك دورز أو فايروسات وغيره في الجهاز. هي طريقة مستوحاة من الإلتهاب وكيفية إنتشاره لما يحيط به من خلايا الجسم. تكمن قوة الآلية في كونها تصيب أغلب الملفات التنفيذية في الجهاز المستهدف وبدوره يكون كل ملف مصاب وسيلة لنشر العدوى. فعند نقل أي ملف تنفيدي من جهاز مصاب لجهاز آخر ثم تنفيذه يعني ذلك إصابة جهاز جديد.\nتعمل الفكرة على أغلب الأنظمة المعروفة ولكن سأتطرق لعملها على نظام Windows فقط لفعاليتها العالية على هذا النظام تحديداً وفشلها لأسباب عدة فالأنظمة الإخرى سنتطرق لها لاحقاً. كما تشير كلمة PE في العنوان إلى Portable Executabe وهي تركيبة الملفات التنفيذية المستخدمة في نظام Windows.\nكيفية عملها مخاطرها سرعة الإنتشار العالية. وعملها بصمت بحيث يعمل كل ملف في جهازك لصالح الإنتشار بدون علمك. كون الملفات تعمل بشكل طبيعي. أيضا صعوبة التخلص منها. وسهولة مرورها على بعض الخبراء الأمنيين غير المطلعين على هذه الآلية. فيمكن أن يعتقد الخبير الأمني بأنه تخلص من كل أثر لأداة التجسس على سبيل المثال، دون أن يعلم بأنه بمجرد تنفيذه لملف آخر في جهازه سيقوم الملف بتحميل الأداة وتنفيذها مرة إخرى.\nأما الآن فماهي تفاصيل الآلية. قبل أن أتطرق لكيفية التنفيذ لابد أن نعرف تركيبة الملفات التنفيذية وكيف تعمل لإستغلالها.\nملاحظة: لفهم الشرح بشكل أفضل يفضل أن تكون على علم بكيفية عمل الذاكرة والملفات في الجهاز Virutal \u0026 Base Addressing\nكيف تعمل ملفات Windows التنفيذية (Exe 32-bit) يتضمن عمل الملف التنفيذي الكثير من العمليات اللتي يطول شرحها لتهيئة النظام والملف للتنفيذ. ولكن مايهمنا هو نقطة بداية الملف أو مايسمى Entry point وهو العنوان اللذي يبدأ النظام تنفيد أكواد الملف من عنده.\nيتكون الملف التنفيذي كبقية الملفات من بايتات عبارة عن معلومات عن الملف والكود التنفيذي والبيانات من نصوص وغيرها.\nتركيبة الملف التنفيذي: يهمنا PE Header أو NT Header وهو ستركتشر آخر يحتوى على معلومات مهمة لتنفيذ الآلية\nمانبحث عنه هو نقطة الإدخال Entry Point لأنه بتعديل تلك النقطة لعنوان آخر سيقوم النظام بتنفيد الملف من تلك النقطة واللتي يمكننا إستغلالها بوضع كود خاص مهمته تحميل الملف وتنفيده. ثم ننفذ نقطة الإدخال السابقة قبل التعديل بعد تنفيذ مانريد فيعمل الملف بشكل طبيعي من نقطة الإدخال الإصلية.\nيجب أيضآ أن لا ننسى الإحتفاظ بعنوان نقطة الإدخال السابق للعودة إليه لتنفيد الملف بشكل طبيعي قبل تعديل الـ AddressOfEntryPoint لتشير للكود اللذي نريد تنفيذه فالملف\nيمكننا الإطلاع على الستركتشرز من msdn\n نقطة الإدخال توجد في IMAGE_OPTIONAL_HEADER\n فعالية هذه الآلية في نظام وندوز تعتمد على وجود صلاحيات كتابة لباقي الملفات المجاورة. على عكس الأنظمة المتبقية التي تفشل فيها بسبب التشديد في صلاحيات فتح وقراءة وتعديل الملفات. مثال على فتح ملف والحصول على موقع تعديل نقطة الإدخال وحفظ نقطة الإدخال القديمة\n Shell-code و CodeCave ملاحظة: هذا الجزء يتطلب بعض المعرفة بلغة الاسمبلي وطريقة عمل المعالج\nأما الآن وبعد أن أصبح بإمكاننا تعديل نقطة الإدخال وتوجيه الملف لأي نقطة نرغب أن يبدأ التنفيد من عندها لابد أيضا من أن نعدل على بايتات الملف ليحمل الكود اللذي نرغب بتنفيذه وهو مايدعى بـ ShellCode ولكن لايمكننا كتابته في مكان حيث يوجد بيانات فقد يقوم هذا بتدمير الملف وقد لايعمل بشكل طبيعي. أيضا لايمكننا كتابته فوق مكان يوجد فيه كود خاص بالملف الأصلي فقد يدمر ذلك عمل الملف. ومن هنا نخرج بمايسمى Code cave وهي منطقة في كود الملف خالية من الاكواد أو ملية بأمر من لغة الاسمبلي وهو NOP يقوم المعالج بالمرور فوقه بدون تنفيد أي أمر. وغالبا مانجد في الملفات التنفيذية سلسلة من الإمر NOP متتالية يمكننا إستبدالها بالكود المراد. لكن يجب أن يكون الحجم مناسب لكتابة الشل كود فقد تكون مجرد 3 NOPs متتالية بمساحة مجموعها 12 بايت. وهي مساحة غير كافية لكتابة شل كود في الغالب\nلذلك يجب على الملف الخبيث أن يكون قادر على البحث في الملفات عن CodeCave بمساحة كافية لكتابة الشل كود فيها ثم توجيه نقظة الإدخال للموقع الجديد اللذي يحتوي عليه.\nأحد الأدوات التي يمكن أن يستعين بها الملف في هذه العملية https://github.com/axcheron/pycave\nأو يمكن للملف البحث عن عدد كافي من الـ NOPs\nكتابة الشل كود توجد بعض التحديات في كتابة الشيل كودز نظرآ للتغير العشوائي في الذاكرة وإختلاف موقع الدوال من جهاز لآخر. أيضا اختلاف مساحة العناوين.\nيوجد عدد كبير من الشل كودز والبايلودز الممكن إستخدامهم لأهداف متعددة أحدها إستخدام دالة الويندوزURLDownloadToFile لتحميل ملف وثم تنفيذه\nأو يمكن أن تقوم بكتابة الشل كود الخاص بك بإستخدام الاسمبلي ثم إستخدام بايتاته وكتابتها في الـ Code cave\nمثال: https://www.exploit-db.com/exploits/24318/\n الآلية بالكامل  طرق الحماية   من أهم الطرق المتبعة مايسمى Pattern recognition وهو تخزين الشل كود أو جزء منه. على سبيل المثال بايتات رابط الملف فالشل كود ثم البحث في بايتات الملفات عنه. فعند وجوده يعني أن الملف مصاب ويمكن بسهولة علاجه بتعديل نقطة الإدخال وحذف الشل كود. وتطبيق هذه الطريقة على جميع الملفات إلا أنه يمكن تجاوز هذه الطريقة بإستخدام عدة تقنيات منها مايسمى polymorphic code وهي تقنية تقوم بإصدار كود مختلف في كل مرة ولكن يؤدي نفس العمل أو بمجرد وضع بعض من العشوائية في الشل كود\n  File verification من طرق الحماية الإخرى والتي يمكن إتباعها للحماية من عدة هجمات للتأكد من سلامة الملف. عن طريق إصدار وإسم الملف يمكنك مقارنته مع الملف الرسمي بعدة طرق أما رفع الملف في مواقع المقارنة وفحص الملفات لمقارنة الهاش الخاص بالملف أو عن طريق موجه أوامر وندوز بإستعمال الأمر\n  FC [pathname1] [pathname2] فعند وجود إختلاف بالرغم من تطابق الإصدار والشركة والحجم فلابد من فحص الجهاز والملف للتأكد من سلامة جهازك.\n","wordCount":"911","inLanguage":"en","image":"https://wes4m.io/%3Cimage%20path/url%3E","datePublished":"2018-08-12T04:51:01-07:00","dateModified":"2018-08-12T04:51:01-07:00","author":{"@type":"Person","name":"wes4m"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://wes4m.io/posts/pe_infection/"},"publisher":{"@type":"Organization","name":"wes4m","logo":{"@type":"ImageObject","url":"https://wes4m.io/favicon.ico"}}}</script>
+</head>
+<body id=top>
+<script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add('dark'):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove('dark'):window.matchMedia('(prefers-color-scheme: dark)').matches&&document.body.classList.add('dark')</script>
+<header class=header>
+<nav class=nav>
+<div class=logo>
+<a href=https://wes4m.io/ accesskey=h title="./ (Alt + H)">./</a>
+<div class=logo-switches>
+<button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+</button>
+</div>
+</div>
+<ul id=menu>
+<li>
+<a href=https://wes4m.io/tags/ title=Tags>
+<span>Tags</span>
+</a>
+</li>
+</ul>
+</nav>
+</header>
+<main class=main>
+<article class=post-single>
+<header class=post-header>
+<div class=breadcrumbs><a href=https://wes4m.io/>Home</a>&nbsp;»&nbsp;<a href=https://wes4m.io/posts/>Posts</a></div>
+<h1 class=post-title dir=rtl>
+آلية عمل | PE Infection
+</h1>
+<div class=post-meta dir=rtl><span title="2018-08-12 04:51:01 -0700 -0700">August 12, 2018</span>&nbsp;·&nbsp;5 min&nbsp;·&nbsp;wes4m&nbsp;|&nbsp;<a href=https://github.com/wes4m/wes4m.github.io/tree/drafting/content/posts/pe_infection.md rel="noopener noreferrer" target=_blank>Suggest Changes</a>
+</div>
+</header>
+<div class=post-content dir=rtl><p>توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة.
+طرق الحماية في نهاية المقال.
+كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.</p>
+<h2 id=ماهي>ماهي<a hidden class=anchor aria-hidden=true href=#ماهي>#</a></h2>
+<p>عدوى الملفات التنفيذية أو PE Infection
+هي من أقدم الطرق المستخدمة في نشر الملفات الخبيثة من باك دورز أو فايروسات وغيره في الجهاز. هي طريقة مستوحاة من الإلتهاب وكيفية إنتشاره لما يحيط به من خلايا الجسم.
+تكمن قوة الآلية في كونها تصيب أغلب الملفات التنفيذية في الجهاز المستهدف وبدوره يكون كل ملف مصاب وسيلة لنشر العدوى. فعند نقل أي ملف تنفيدي من جهاز مصاب لجهاز آخر ثم تنفيذه يعني ذلك إصابة جهاز جديد.</p>
+<p>تعمل الفكرة على أغلب الأنظمة المعروفة ولكن سأتطرق لعملها على نظام Windows فقط لفعاليتها العالية على هذا النظام تحديداً وفشلها لأسباب عدة فالأنظمة الإخرى سنتطرق لها لاحقاً.
+كما تشير كلمة PE في العنوان إلى Portable Executabe وهي تركيبة الملفات التنفيذية المستخدمة في نظام Windows.</p>
+<h3 id=كيفية-عملها>كيفية عملها<a hidden class=anchor aria-hidden=true href=#كيفية-عملها>#</a></h3>
+<p><img loading=lazy src=/images/peinfc.jpg alt=peinfc>
+</p>
+<h3 id=مخاطرها>مخاطرها<a hidden class=anchor aria-hidden=true href=#مخاطرها>#</a></h3>
+<p>سرعة الإنتشار العالية. وعملها بصمت بحيث يعمل كل ملف في جهازك لصالح الإنتشار بدون علمك. كون الملفات تعمل بشكل طبيعي.
+أيضا صعوبة التخلص منها. وسهولة مرورها على بعض الخبراء الأمنيين غير المطلعين على هذه الآلية. فيمكن أن يعتقد الخبير الأمني بأنه تخلص من كل أثر لأداة التجسس على سبيل المثال، دون أن يعلم بأنه بمجرد تنفيذه لملف آخر في جهازه سيقوم الملف بتحميل الأداة وتنفيذها مرة إخرى.</p>
+<p>أما الآن فماهي تفاصيل الآلية.
+قبل أن أتطرق لكيفية التنفيذ لابد أن نعرف تركيبة الملفات التنفيذية وكيف تعمل لإستغلالها.</p>
+<p>ملاحظة: لفهم الشرح بشكل أفضل يفضل أن تكون على علم بكيفية عمل الذاكرة والملفات في الجهاز Virutal & Base Addressing</p>
+<h3 id=كيف-تعمل-ملفات-windows-التنفيذية-exe-32-bit>كيف تعمل ملفات Windows التنفيذية (Exe 32-bit)<a hidden class=anchor aria-hidden=true href=#كيف-تعمل-ملفات-windows-التنفيذية-exe-32-bit>#</a></h3>
+<p>يتضمن عمل الملف التنفيذي الكثير من العمليات اللتي يطول شرحها لتهيئة النظام والملف للتنفيذ. ولكن مايهمنا هو نقطة بداية الملف أو مايسمى Entry point
+وهو العنوان اللذي يبدأ النظام تنفيد أكواد الملف من عنده.</p>
+<p>يتكون الملف التنفيذي كبقية الملفات من بايتات عبارة عن معلومات عن الملف والكود التنفيذي والبيانات من نصوص وغيرها.</p>
+<p>تركيبة الملف التنفيذي:
+<img loading=lazy src=/images/mzhead.jpg alt=mzhead>
+</p>
+<p>يهمنا PE Header أو NT Header وهو ستركتشر آخر يحتوى على معلومات مهمة لتنفيذ الآلية</p>
+<p>مانبحث عنه هو نقطة الإدخال Entry Point
+لأنه بتعديل تلك النقطة لعنوان آخر سيقوم النظام بتنفيد الملف من تلك النقطة
+واللتي يمكننا إستغلالها بوضع كود خاص مهمته تحميل الملف وتنفيده. ثم ننفذ نقطة الإدخال السابقة قبل التعديل بعد تنفيذ مانريد فيعمل الملف بشكل طبيعي من نقطة الإدخال الإصلية.</p>
+<p>يجب أيضآ أن لا ننسى الإحتفاظ بعنوان نقطة الإدخال السابق للعودة إليه لتنفيد الملف بشكل طبيعي
+قبل تعديل الـ AddressOfEntryPoint لتشير للكود اللذي نريد تنفيذه فالملف</p>
+<p>يمكننا الإطلاع على الستركتشرز من msdn</p>
+<script src=https://gist.github.com/wes4m/6e650b6f04062dbf09eafb5abde0515e.js></script>
+<p>نقطة الإدخال توجد في IMAGE_OPTIONAL_HEADER</p>
+<script src=https://gist.github.com/wes4m/00aaad116d4dcd5fad72628a1491a486.js></script>
+<p>فعالية هذه الآلية في نظام وندوز تعتمد على وجود صلاحيات كتابة لباقي الملفات المجاورة. على عكس الأنظمة المتبقية التي تفشل فيها بسبب التشديد في صلاحيات فتح وقراءة وتعديل الملفات.
+مثال على فتح ملف والحصول على موقع تعديل نقطة الإدخال وحفظ نقطة الإدخال القديمة</p>
+<script src=https://gist.github.com/wes4m/81732f209a707a74c47b8a2399ed4bc0.js></script>
+<h3 id=shell-code-و-codecave>Shell-code و CodeCave<a hidden class=anchor aria-hidden=true href=#shell-code-و-codecave>#</a></h3>
+<p>ملاحظة: هذا الجزء يتطلب بعض المعرفة بلغة الاسمبلي وطريقة عمل المعالج</p>
+<p>أما الآن وبعد أن أصبح بإمكاننا تعديل نقطة الإدخال وتوجيه الملف لأي نقطة نرغب أن يبدأ التنفيد من عندها لابد أيضا من أن نعدل على بايتات الملف ليحمل الكود اللذي نرغب بتنفيذه
+وهو مايدعى بـ ShellCode
+ولكن لايمكننا كتابته في مكان حيث يوجد بيانات فقد يقوم هذا بتدمير الملف وقد لايعمل بشكل طبيعي. أيضا لايمكننا كتابته فوق مكان يوجد فيه كود خاص بالملف الأصلي فقد يدمر ذلك عمل الملف.
+ومن هنا نخرج بمايسمى Code cave
+وهي منطقة في كود الملف خالية من الاكواد أو ملية بأمر من لغة الاسمبلي وهو NOP
+يقوم المعالج بالمرور فوقه بدون تنفيد أي أمر.
+وغالبا مانجد في الملفات التنفيذية سلسلة من الإمر NOP متتالية يمكننا إستبدالها بالكود المراد. لكن يجب أن يكون الحجم مناسب لكتابة الشل كود
+فقد تكون مجرد 3 NOPs متتالية
+بمساحة مجموعها 12 بايت. وهي مساحة غير كافية لكتابة شل كود في الغالب</p>
+<p>لذلك يجب على الملف الخبيث أن يكون قادر على البحث في الملفات عن CodeCave بمساحة كافية لكتابة الشل كود فيها ثم توجيه نقظة الإدخال للموقع الجديد اللذي يحتوي عليه.</p>
+<p>أحد الأدوات التي يمكن أن يستعين بها الملف في هذه العملية
+<a href=https://github.com/axcheron/pycave>https://github.com/axcheron/pycave</a></p>
+<p>أو يمكن للملف البحث عن عدد كافي من الـ NOPs</p>
+<h4 id=كتابة-الشل-كود>كتابة الشل كود<a hidden class=anchor aria-hidden=true href=#كتابة-الشل-كود>#</a></h4>
+<p>توجد بعض التحديات في كتابة الشيل كودز نظرآ للتغير العشوائي في الذاكرة
+وإختلاف موقع الدوال من جهاز لآخر. أيضا اختلاف مساحة العناوين.</p>
+<p>يوجد عدد كبير من الشل كودز والبايلودز الممكن إستخدامهم لأهداف متعددة أحدها إستخدام دالة الويندوزURLDownloadToFile لتحميل ملف وثم تنفيذه</p>
+<p>أو يمكن أن تقوم بكتابة الشل كود الخاص بك بإستخدام الاسمبلي ثم إستخدام بايتاته وكتابتها في الـ Code cave</p>
+<p>مثال:
+<a href=https://www.exploit-db.com/exploits/24318/>https://www.exploit-db.com/exploits/24318/</a></p>
+<script src=https://gist.github.com/wes4m/558adbffecd80f09de37b04818b4b63c.js></script>
+<h3 id=الآلية-بالكامل>الآلية بالكامل<a hidden class=anchor aria-hidden=true href=#الآلية-بالكامل>#</a></h3>
+<script src=https://gist.github.com/wes4m/c68d5c42baea8880f9048f81f1991723.js></script>
+<h3 id=طرق-الحماية>طرق الحماية<a hidden class=anchor aria-hidden=true href=#طرق-الحماية>#</a></h3>
+<ul>
+<li>
+<p>من أهم الطرق المتبعة مايسمى Pattern recognition
+وهو تخزين الشل كود أو جزء منه. على سبيل المثال بايتات رابط الملف فالشل كود
+ثم البحث في بايتات الملفات عنه. فعند وجوده يعني أن الملف مصاب ويمكن بسهولة علاجه بتعديل نقطة الإدخال وحذف الشل كود. وتطبيق هذه الطريقة على جميع الملفات
+إلا أنه يمكن تجاوز هذه الطريقة بإستخدام عدة تقنيات منها مايسمى polymorphic code وهي تقنية تقوم بإصدار كود مختلف في كل مرة ولكن يؤدي نفس العمل
+أو بمجرد وضع بعض من العشوائية في الشل كود</p>
+</li>
+<li>
+<p>File verification
+من طرق الحماية الإخرى والتي يمكن إتباعها للحماية من عدة هجمات للتأكد من سلامة الملف.
+عن طريق إصدار وإسم الملف يمكنك مقارنته مع الملف الرسمي بعدة طرق
+أما رفع الملف في مواقع المقارنة وفحص الملفات لمقارنة الهاش الخاص بالملف
+أو عن طريق موجه أوامر وندوز بإستعمال الأمر</p>
+</li>
+</ul>
+<div class=highlight><pre tabindex=0 class=chroma><code class=language-c data-lang=c>    <span class=n>FC</span> <span class=p>[</span><span class=n>pathname1</span><span class=p>]</span> <span class=p>[</span><span class=n>pathname2</span><span class=p>]</span>
+</code></pre></div><p>فعند وجود إختلاف بالرغم من تطابق الإصدار والشركة والحجم فلابد من فحص الجهاز والملف للتأكد من سلامة جهازك.</p>
+</div>
+<footer class=post-footer>
+<ul class=post-tags dir=rtl>
+<li><a href=https://wes4m.io/tags/malware/>Malware</a></li>
+<li><a href=https://wes4m.io/tags/windows/>Windows</a></li>
+</ul>
+<nav class=paginav>
+<a class=prev href=https://wes4m.io/posts/dragonsector_production/>
+<span class=title>« Prev</span>
+<br>
+<span>حل تحدي Production - DragonCTF</span>
+</a>
+</nav>
+</footer>
+</article>
+</main>
+<footer class=footer>
+<span>&copy; 2022 <a href=https://wes4m.io/>wes4m</a></span>
+<span>
+Powered by
+<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
+        <a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a>
+</span>
+</footer>
+<a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg>
+</a>
+<script>let menu=document.getElementById('menu');menu&&(menu.scrollLeft=localStorage.getItem("menu-scroll-position"),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}),document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener("click",function(b){b.preventDefault();var a=this.getAttribute("href").substr(1);window.matchMedia('(prefers-reduced-motion: reduce)').matches?document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView({behavior:"smooth"}),a==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${a}`)})})</script>
+<script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script>
+<script>document.getElementById("theme-toggle").addEventListener("click",()=>{document.body.className.includes("dark")?(document.body.classList.remove('dark'),localStorage.setItem("pref-theme",'light')):(document.body.classList.add('dark'),localStorage.setItem("pref-theme",'dark'))})</script>
+</body>
+</html>
