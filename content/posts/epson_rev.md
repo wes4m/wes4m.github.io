@@ -4,7 +4,7 @@ date: 2022-09-02T21:29:19+03:00
 draft: false
 description: ""
 # weight: 1
-# aliases: ["/first"]
+aliases: ["/epsonrev"]
 tags: ["Network", "Reverse"]
 # author: ["Me", "You"] # multiple authors
 author: "wes4m"
