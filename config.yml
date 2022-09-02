@@ -1,6 +1,6 @@
 baseURL: "https://wes4m.io/"
 title: wes4m
-paginate: 5
+paginate: 4
 theme: hugo-PaperMod
 
 enableRobotsTXT: true
@@ -85,6 +85,9 @@ menu:
       url: /tags/
       weight: 10
 
+staticDir:
+- static
+
 # Read: https://github.com/adityatelange/hugo-PaperMod/wiki/FAQs#using-hugos-syntax-highlighter-chroma
 pygmentsUseClasses: true
 markup:
@@ -95,3 +98,6 @@ markup:
     # guessSyntax: true
     # lineNos: true
     # style: monokai
+  goldmark:
+    renderer:
+      unsafe: true
