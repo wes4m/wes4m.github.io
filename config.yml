@@ -1,6 +1,6 @@
 baseURL: "https://wes4m.io/"
 title: wes4m
-paginate: 5
+paginate: 4
 theme: hugo-PaperMod
 
 enableRobotsTXT: true
