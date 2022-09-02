@@ -36,7 +36,7 @@ cover:
 
 A significant part of my current work involves dealing with thermal printers to print receipts, invoices, item slips etc ..; For those unfamiliar. I'm talking about those usually small cashier side printers that print your receipts when you buy something from a restaurant, or any other shop.
 
-Thermal printers use a universal protocol to send/receive printing commands. This protocol is called `ESC/POS`. For anyone stumbling on to this post trying to figure-out what the heck is going on with those printers, I feel you. Buffering issues, printer not printing, queuing issues, junk printing, delayed printing, connection loss, data leaks, the list goes on. At some point, I started wondering why does EPSON printers have none of these issues while others did?. This led to the curious investigation and reverse engineering of the EPSON TM-m30 printer.
+Thermal printers use a universal protocol to send/receive printing commands. This protocol is called `ESC/POS`. For anyone stumbling on to this post trying to figure-out what the heck is going on with those printers, I feel you. Buffering issues, printer not printing, queuing issues, junk printing, delayed printing, connection loss, data leaks, the list goes on. At some point, I started wondering why does EPSON printers have none of these issues while others did? This led to the curious investigation and reverse engineering of the EPSON TM-m30 printer.
 
 First, Some nuances there are multiple versions of `ESC/POS`. Not officially. But there are many minor differences between manufacturers making different models of those thermal printers. Each deciding to add custom `ESC/POS` functions, since the protocol allows that. Some ignoring certain `ESC/POS` commands. And many having undocumented methods. Some provide their own SDKs like EPSON, who by the way, are the creators of `ESC/POS`. What makes this hard to discover is that an `ESC/POS` SDK will usually work and print on all the printers you have. Until it doesn't for some unknown reason. To fix issues you will probably start adding random delays; and that will work for a while. Then, network speed will break it, print page size could break it, using different OS? will break it. You will try managing the queue yourself. Even that is still not a fix. Everything you end up doing is basically guesswork trying to support a bad protocol that lacks necessary feedback, queuing, and other important functionalities. 
 
@@ -44,7 +44,7 @@ First, Some nuances there are multiple versions of `ESC/POS`. Not officially. Bu
 The obvious solution of course, is to have a better protocol/s that communicate back printing status feedback, does error handling/correction, and queuing. This is exactly what EPSON did. A proprietary modified `ESC/POS` combined with another proprietary protocol for orchestrating printing, discovery, etc ...
 
 # RE 1
-So I went to work. Trying to take the easier path I downloaded EPSON's JS SDK looking for their discovery method. The discovery method allows the SDK to discover all of EPSON's thermal printers connected to the network/bluetooth/USB. Since it was something not supported by `ESC/POS` itself, it must come from a different protocol. Turns out, their JS SDK does not have any of the methods I was looking for. Moving on, I downloaded their Windows SDK and started digging into it using IDA. During that time, I had a background nmap scan running for all TCP/UDP ports the printer was listening to. 
+So I went to work. Trying to take the easier path I downloaded EPSON's JS SDK looking for their discovery method. The discovery method allows the SDK to discover all of EPSON's thermal printers connected to the network/bluetooth/USB. Since it was something not supported by `ESC/POS` itself, it must come from a different protocol. Turns out, their JS SDK does not have any of the methods I was looking for. Moving on, I downloaded their Windows SDK and started digging into it using IDA. During that time, I had a background Nmap scan running for all TCP/UDP ports the printer was listening to. 
 
 
 Results:
@@ -68,7 +68,7 @@ Looking more into the de-compiled SDK. I find the function `EpsonIoDiscoveryStar
 After sending it, it will try to receive a response as shown below.
 ![ENPCQ-2](/images/enpcq-2.png)
 
-Using the recieved response a comparison on the first 6 bytes of the packet will take place and later on the function `EpsonIoUpdatePrinterList` appears.
+Using the received response a comparison on the first 6 bytes of the packet will take place and later on the function `EpsonIoUpdatePrinterList` appears.
 ![ENPCQ-3](/images/enpcq-3.png)
 
 Looking deeper into it, there didn't seem to be any security mechanism in place. And trying to avoid IDA as much as I could. I decided to consider this enough data gathered to fire up Wireshark and start monitoring what a discovery exchange looks like for `ENPC`.
@@ -132,7 +132,7 @@ EPSONq = Query response
 ... 
 ```
 
-Now this packet had non ASCII data. However, if you've ever done network stuff in hex you would notice something very familiar. `ff ff ff 00` this is equivalent to `255.255.255.0` which happens to be my network netmask. 
+Now this packet had non-ASCII data. However, if you've ever done network stuff in hex you would notice something very familiar. `ff ff ff 00` this is equivalent to `255.255.255.0` which happens to be my network netmask. 
 Converting the other bytes to IPs I got matches for the printer IP, MAC address, and the network gateway IP.
 
 So far, I know that every query/command, for both message and response, follows this structure.
@@ -239,14 +239,14 @@ private getQueryResponse(function_hex: string): Uint8Array | undefined {
 Listening on port 3289. Then responding with the above responses; successfully broadcasted a fake `TM-m30` printer.
 
 ## RE 2
-With the most important parts of `ENPC` reversed and emulated. The idea of the protocol was much clearer. It handled discovery of printers. It also checked through the `WHO_IS_HOLDING` query for who is holding the printer. If the printer responded with the asking device's ip the SDK will proceed and attempt to print. If it responded with zeros it will also proceed and connect to the `ESC/POS` port 9100 and attempt to print. However, if any other IP was holding, the SDK will wait. As soon as a connection is established to port 9100. The holding IP is updated. That is basically what EPSON did to solve holding and prioritizing issues during printing with multiple devices. This is also what all other printers lacked. Now, there are still other issues with `ESC/POS` that this simple `ENPC` holding check is not enough to fix.
+With the most important parts of `ENPC` reversed and emulated. The idea of the protocol was much clearer. It handled discovery of printers. It also checked through the `WHO_IS_HOLDING` query for who is holding the printer. If the printer responded with the asking device's ip the SDK will proceed and attempt to print. If it responded with zeros, it will also proceed and connect to the `ESC/POS` port 9100 and attempt to print. However, if any other IP was holding, the SDK will wait. As soon as a connection is established to port 9100. The holding IP is updated. That is basically what EPSON did to solve holding and prioritizing issues during printing with multiple devices. This is also what all other printers lacked. Now, there are still other issues with `ESC/POS` that this simple `ENPC` holding check is not enough to fix.
 
-Next in line was attempting to print using the emulated printer and watching the `ESC/POS` data flow. However. the TM-m30 had other tricks built in into its `ESC/POS` allowing it to be more reliable and also preventing a simple replay of packets from working.
-Starting with regular status messages from the printer to the SDK through `ESC/POS`. And also better queuing.
+Next in line was attempting to print using the emulated printer and watching the `ESC/POS` data flow. However. the TM-m30 had other tricks built in into its `ESC/POS` allowing it to be more reliable and preventing a simple replay of packets from working.
+Starting with regular status messages from the printer to the SDK through `ESC/POS`. Also, better queuing.
 
 I was able to identify many of the commands through the [ESC/POS Spec documentation](https://aures-support.com/DATA/drivers/Imprimantes/Commande%20ESCPOS.pdf). But, many of the commands sent from the printer were custom to the EPSON printer.
 
-The `ESC/POS` printing process always started with a `DLE DOT n` command asking for real time transmission of printer status. (Which many printer did not implement!)
+The `ESC/POS` printing process always started with a `DLE DOT n` command asking for real time transmission of printer status. (Which many printers did not implement!)
 ![ESCPOS-1](/images/ESCPOS-1.png).
 
 The SDK will also attempt to periodically enable Automatic Status Back (ASB) expecting a response of `1400000f`.
@@ -272,7 +272,7 @@ if (hex_data == "101406040001031401060208") {
 ```
 
 
-Replaying packets was almost enough to get the `ESC/POS` printing process completed. However, one critical part was missing. an EPSON modified `ESC/POS` printjob queuing functionality! (The most important missing future causing issues in the other printers). As you can see below, at the end of EPSON's `ESC/POS` printing commands, it sends a QR Model Select command. That's weird, I wasn't printing any QR codes. Also, the QR model function and other values did not match the `ESC/POS` spec. 
+Replaying packets was almost enough to get the `ESC/POS` printing process completed. However, one critical part was missing. an EPSON modified `ESC/POS` print-job queuing functionality! (The most important missing future causing issues in the other printers). As you can see below, at the end of EPSON's `ESC/POS` printing commands, it sends a QR Model Select command. That's weird, I wasn't printing any QR codes. Also, the QR model function and other values did not match the `ESC/POS` spec. 
 
 ![ESCPOS-2](/images/ESCPOS-2.png)
 ![ESCPOS-3](/images/ESCPOS-3.png)
@@ -287,13 +287,13 @@ This ascii string changes to `000002` then `000003` with each print. Making it c
 if(hex_data.includes("1d28480600")) {
     // Sets print job number and starting printing the buffer
 
-    // Get Counter for current printjob
+    // Get Counter for current print-job
     const counter = hex_data.split("1d28480600")[1].slice(4);
     instance.ESCPOSLastPrintJobCounter = counter;
     socket.write(hexStringToBytes("1400000f") as Uint8Array);
 
     if (instance.ESCPOSLastConnectionSocket) {
-        // Send that ESCPOS printingjob is done (custom EPSON message)
+        // Send that ESCPOS printing-job is done (custom EPSON message)
         socket.write(hexStringToBytes(`3722${instance.ESCPOSLastPrintJobCounter}00`) as Uint8Array);
 
         instance.ESCPOSLastConnectionSocket.destroy();
@@ -315,7 +315,7 @@ if(hex_data.includes("1d28480600")) {
 ```
 
 
-With all that done. Now I can broadcast a TM-m30 printer. Connect to it, and get the `ESC/POS` data from printjobs. 
+With all that done. Now I can broadcast a TM-m30 printer. Connect to it, and get the `ESC/POS` data from print-jobs. 
 
 ## Extra ?
 To have more fun I decide to fire up Square POS. Connect to the printer and attempt to get the printer receipt. However, when I found no encoded text in the `ESC/POS` print data. I figured that Square was sending bitmap images instead of text. How to extract that? with some borrowed help from [escpos-tools](https://github.com/receipt-print-hq/escpos-tools) I wrote the following image processor which extracts the graphics data. Merges the bitmaps (since Square sends multiple) and converts it to a `PNG` using ffmpeg. 
@@ -485,4 +485,4 @@ I made the project using react-native, and typescript in order to broadcast the 
 ![result](/images/result.png)
 
 ## Conclusion
-Other than having fun, and hopefully this post being helpful to someone. The project was of no help in discovering a solution to other printers. There is in my opinion no solutions, other than having a printer run a custom firmware, or just use an EPSON printer or any other printer that has a a custom firmware and SDKs. There is a reason why many POSs only support specific printers.
+Other than having fun, and hopefully this post being helpful to someone. The project was of no help in discovering a solution to other printers. There are in my opinion no solutions, other than having a printer run a custom firmware, using an EPSON printer, or any other printer that has a custom firmware and SDKs. There is a reason why many POS systems only support a specific set of printers.
