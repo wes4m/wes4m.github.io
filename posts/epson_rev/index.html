@@ -1,0 +1,495 @@
+<!doctype html><html lang=en dir=auto>
+<head><meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
+<meta name=robots content="index, follow">
+<title>Reverse engineering thermal printers | wes4m</title>
+<meta name=keywords content="Network,Reverse">
+<meta name=description content="A significant part of my current work involves dealing with thermal printers to print receipts, invoices, item slips etc ..; For those unfamiliar. I&rsquo;m talking about those usually small cashier side printers that print your receipts when you buy something from a restaurant, or any other shop.
+Thermal printers use a universal protocol to send/receive printing commands. This protocol is called ESC/POS. For anyone stumbling on to this post trying to figure-out what the heck is going on with those printers, I feel you.">
+<meta name=author content="wes4m">
+<link rel=canonical href=https://wes4m.io/posts/epson_rev/>
+<link crossorigin=anonymous href=/assets/css/stylesheet.c266585e349dd9ce670351e0239f03ee0ebc4ca57cc47e0fd0d98f00e50aee7e.css integrity="sha256-wmZYXjSd2c5nA1HgI58D7g68TKV8xH4P0NmPAOUK7n4=" rel="preload stylesheet" as=style>
+<script defer crossorigin=anonymous src=/assets/js/highlight.f413e19d0714851f6474e7ee9632408e58ac146fbdbe62747134bea2fa3415e0.js integrity="sha256-9BPhnQcUhR9kdOfuljJAjlisFG+9vmJ0cTS+ovo0FeA=" onload=hljs.initHighlightingOnLoad()></script>
+<link rel=icon href=https://wes4m.io/favicon.ico>
+<link rel=icon type=image/png sizes=16x16 href=https://wes4m.io/favicon-16x16.png>
+<link rel=icon type=image/png sizes=32x32 href=https://wes4m.io/favicon-32x32.png>
+<link rel=apple-touch-icon href=https://wes4m.io/apple-touch-icon.png>
+<link rel=mask-icon href=https://wes4m.io/safari-pinned-tab.svg>
+<meta name=theme-color content="#2e2e33">
+<meta name=msapplication-TileColor content="#2e2e33">
+<noscript>
+<style>#theme-toggle,.top-link{display:none}</style>
+<style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--hljs-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51)}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style>
+</noscript>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-X4Z7CWYY5B"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-X4Z7CWYY5B',{anonymize_ip:!1})}</script>
+<meta property="og:title" content="Reverse engineering thermal printers">
+<meta property="og:description" content="A significant part of my current work involves dealing with thermal printers to print receipts, invoices, item slips etc ..; For those unfamiliar. I&rsquo;m talking about those usually small cashier side printers that print your receipts when you buy something from a restaurant, or any other shop.
+Thermal printers use a universal protocol to send/receive printing commands. This protocol is called ESC/POS. For anyone stumbling on to this post trying to figure-out what the heck is going on with those printers, I feel you.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wes4m.io/posts/epson_rev/">
+<meta property="og:image" content="https://wes4m.io/%3Cimage%20path/url%3E"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-09-02T21:29:19+03:00">
+<meta property="article:modified_time" content="2022-09-02T21:29:19+03:00"><meta property="og:site_name" content="wes4m">
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:image content="https://wes4m.io/%3Cimage%20path/url%3E">
+<meta name=twitter:title content="Reverse engineering thermal printers">
+<meta name=twitter:description content="A significant part of my current work involves dealing with thermal printers to print receipts, invoices, item slips etc ..; For those unfamiliar. I&rsquo;m talking about those usually small cashier side printers that print your receipts when you buy something from a restaurant, or any other shop.
+Thermal printers use a universal protocol to send/receive printing commands. This protocol is called ESC/POS. For anyone stumbling on to this post trying to figure-out what the heck is going on with those printers, I feel you.">
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://wes4m.io/posts/"},{"@type":"ListItem","position":2,"name":"Reverse engineering thermal printers","item":"https://wes4m.io/posts/epson_rev/"}]}</script>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Reverse engineering thermal printers","name":"Reverse engineering thermal printers","description":"A significant part of my current work involves dealing with thermal printers to print receipts, invoices, item slips etc ..; For those unfamiliar. I\u0026rsquo;m talking about those usually small cashier side printers that print your receipts when you buy something from a restaurant, or any other shop.\nThermal printers use a universal protocol to send/receive printing commands. This protocol is called ESC/POS. For anyone stumbling on to this post trying to figure-out what the heck is going on with those printers, I feel you.","keywords":["Network","Reverse"],"articleBody":"A significant part of my current work involves dealing with thermal printers to print receipts, invoices, item slips etc ..; For those unfamiliar. I’m talking about those usually small cashier side printers that print your receipts when you buy something from a restaurant, or any other shop.\nThermal printers use a universal protocol to send/receive printing commands. This protocol is called ESC/POS. For anyone stumbling on to this post trying to figure-out what the heck is going on with those printers, I feel you. Buffering issues, printer not printing, queuing issues, junk printing, delayed printing, connection loss, data leaks, the list goes on. At some point, I started wondering why does EPSON printers have none of these issues while others did?. This led to the curious investigation and reverse engineering of the EPSON TM-m30 printer.\nFirst, Some nuances there are multiple versions of ESC/POS. Not officially. But there are many minor differences between manufacturers making different models of those thermal printers. Each deciding to add custom ESC/POS functions, since the protocol allows that. Some ignoring certain ESC/POS commands. And many having undocumented methods. Some provide their own SDKs like EPSON, who by the way, are the creators of ESC/POS. What makes this hard to discover is that an ESC/POS SDK will usually work and print on all the printers you have. Until it doesn’t for some unknown reason. To fix issues you will probably start adding random delays; and that will work for a while. Then, network speed will break it, print page size could break it, using different OS? will break it. You will try managing the queue yourself. Even that is still not a fix. Everything you end up doing is basically guesswork trying to support a bad protocol that lacks necessary feedback, queuing, and other important functionalities.\nEPSON’s Fix The obvious solution of course, is to have a better protocol/s that communicate back printing status feedback, does error handling/correction, and queuing. This is exactly what EPSON did. A proprietary modified ESC/POS combined with another proprietary protocol for orchestrating printing, discovery, etc …\nRE 1 So I went to work. Trying to take the easier path I downloaded EPSON’s JS SDK looking for their discovery method. The discovery method allows the SDK to discover all of EPSON’s thermal printers connected to the network/bluetooth/USB. Since it was something not supported by ESC/POS itself, it must come from a different protocol. Turns out, their JS SDK does not have any of the methods I was looking for. Moving on, I downloaded their Windows SDK and started digging into it using IDA. During that time, I had a background nmap scan running for all TCP/UDP ports the printer was listening to.\nResults:\nTCP 9100 which is the normal ESCPOS port TCP 443 which is the web server for admin and some API UDP 161 SNMP UDP 3289 ?? Searching for port 3289 yields results about an ENPC protocol ECSP_SecurityGuideline_v1.1.1.pdf There is also this Stackoverflow question looking for ENPC documentation with a few comments linking to different ENPC references including one 2017 Github repo BlackLotus/epson-stuff of an incomplete attempt at reversing ENPC.\nLooking more into the de-compiled SDK. I find the function EpsonIoDiscoveryStart. Following its calls I ended up at the Discovery thread which contained a loop that kept sending a UDP packet to the ENPC port starting with the string ENPCQ as shown below\nAfter sending it, it will try to receive a response as shown below. Using the recieved response a comparison on the first 6 bytes of the packet will take place and later on the function EpsonIoUpdatePrinterList appears. Looking deeper into it, there didn’t seem to be any security mechanism in place. And trying to avoid IDA as much as I could. I decided to consider this enough data gathered to fire up Wireshark and start monitoring what a discovery exchange looks like for ENPC.\nAt first glance, the device running the SDK and doing a discovery (IP 192.168.1.23) sends a broadcast packet. Then the printer (IP 192.168.1.9) replies. This exchange, alongside other packets in between, kept repeating.\nFiltering for important data the result is as shown. It repeats in a blocks of 6 packets starting with the broadcast packet. This went on even after discovery, which means that the SDK continues to send discovery packets even after the printer is identified.\nDigging into the packets I started to notice some patterns. It looks like every message going out from the SDK is starting with the EPSONQ string. The same string I found in IDA. While the response from the printer starts with EPSONq. There are also other packets going out from the SDK starting with the string EPSONC while the response starts with EPSONc. This looked like how ENPC was differentiating between Q = QUERY and q = QUERY RESPONSE. Also, C = COMMAND and c = COMMAND RESPONSE.\nHaving figured out the first part of the packet. I started looking into the following bytes. It seemed like the next 4 bytes coming after the EPSON{X}, X being either a query/command message/response, were also consistent between message and response. The bytes after those 4 bytes were also always of consistent size. This was good enough to identify those 4 bytes as the Query or Command function/operation number. With this in mind. The initial discovery query message had another 4 bytes.\n0000 45 50 53 4f 4e 51 03 00 00 00 00 00 00 00 EPSONQ........ EPSONQ = Query message 03 00 00 00 = Function number 00 00 00 00 = ?? Considering this. I started looking into the other packets and noticed that some packets had extra bytes. For those packets, the unidentified 4 bytes were reflecting a number equal the number of the extra bytes. This was clear that the 4 Bytes meant the size of the coming message/response.\nFor the next packet\n0000 45 50 53 4f 4e 71 03 00 00 00 00 00 00 85 00 05 EPSONq.......... 0010 01 02 01 54 4d 2d 6d 33 30 00 00 00 00 00 00 00 ...TM-m30....... 0020 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................ 0030 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................ 0040 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................ 0050 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................ 0060 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................ 0070 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................ 0080 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ................ 0090 00 00 00 ... EPSONq = Query response 03 00 00 00 = Function number 00 00 00 85 = Response size Extra bytes = the response which had the printer model name and matched the response size Looking into more packets\n0000 45 50 53 4f 4e 71 00 00 00 10 00 00 00 17 01 02 EPSONq.......... 0010 00 00 00 00 00 00 04 c0 a8 01 09 ff ff ff 00 c0 ................ 0020 a8 01 01 80 7c ....| EPSONq = Query response 00 00 00 10 = Function number (different function) ... Now this packet had non ASCII data. However, if you’ve ever done network stuff in hex you would notice something very familiar. ff ff ff 00 this is equivalent to 255.255.255.0 which happens to be my network netmask. Converting the other bytes to IPs I got matches for the printer IP, MAC address, and the network gateway IP.\nSo far, I know that every query/command, for both message and response, follows this structure.\nexport interface ENPCMessage { QC: string, type_hex: string, func_hex: string, data_len_hex: string, data_hex: string } Following the same process. through trial and error. I started printing and analyzed the packets. Identifying the most important functions list of ENPC queries/commands as follows\nexport const ENPC_QUERIES = { [ENPC_QUERY_FUNCTIONS.DISCOVER_INFO_BROADCAST]: \"00000000\", [ENPC_QUERY_FUNCTIONS.DISCOVER_INFO]: \"03000010\", [ENPC_QUERY_FUNCTIONS.DISCOVER_DEVICE_NAME]: \"03000000\", [ENPC_QUERY_FUNCTIONS.WHO_IS_HOLDING]: \"03000017\", [ENPC_QUERY_FUNCTIONS.UNKNOWN_DISCOVER]: \"00000010\", }; export const ENPC_COMMANDS = { [ENPC_COMMAND_FUNCTIONS.UNKNOWN_COMMAND_1]: \"03000015\", [ENPC_COMMAND_FUNCTIONS.UNKNOWN_COMMAND_2_CHECK]: \"03000016\" }; At this point, I thought about writing a simple spoofer that listens on port 3289 and broadcasts itself as TM-m30 printer. Attempting it with a simple replay of packets did not work, obviously. Because the SDK tries to reach the printer using the provided information from the DISCOVER_INFO query response. This meant that I needed to also build packets with the spoofer device info (ip, and mac address). This was fairly easy with all the important queries identified.\nprivate getQueryResponse(function_hex: string): Uint8Array | undefined { const func_name = dictContainsValue(ENPC_QUERIES, function_hex); if (func_name) { let response: Uint8Array | boolean | undefined = false; if (func_name == ENPC_QUERY_FUNCTIONS.DISCOVER_INFO_BROADCAST) { response = this.ENPC_parser.makeENPC( \"q\", ENPC_QUERIES.DISCOVER_INFO_BROADCAST, \"00000036\", `55422d45454145303833454e534e0000000000000000000000000000000000000001ffff15000200${this.mac_address}0000000100000001` ); } if (func_name == ENPC_QUERY_FUNCTIONS.DISCOVER_DEVICE_NAME) { response = this.ENPC_parser.makeENPC( \"q\", ENPC_QUERIES.DISCOVER_DEVICE_NAME, \"00000085\", `0005010201544d2d6d33300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000` ); } if (func_name == ENPC_QUERY_FUNCTIONS.UNKNOWN_DISCOVER) { response = this.ENPC_parser.makeENPC( \"q\", ENPC_QUERIES.UNKNOWN_DISCOVER, \"00000017\", `01${this.mac_address}0004${this.ip}${this.netmask}${this.gateway}807c` ); } if (func_name == ENPC_QUERY_FUNCTIONS.DISCOVER_INFO) { response = this.ENPC_parser.makeENPC( \"q\", ENPC_QUERIES.DISCOVER_INFO, \"0000000d\", `0e1400000fffffffff39414000` ); } if (func_name == ENPC_QUERY_FUNCTIONS.WHO_IS_HOLDING) { // 00 00 00 00 = No one is holding // Anything else = ip address for ip holding it let current_holding_ip = \"00000000\"; if (this.is_holding) { current_holding_ip = this.holding_ip; } response = this.ENPC_parser.makeENPC( \"q\", ENPC_QUERIES.WHO_IS_HOLDING, \"00000004\", current_holding_ip ); } if (response) { console.log(`\\tResponding to query with: ${bytesToHexString(response)}`) return response; } } console.log(\"\\tTrying to respond to a function not in queries list\"); return undefined; } Listening on port 3289. Then responding with the above responses; successfully broadcasted a fake TM-m30 printer.\nRE 2 With the most important parts of ENPC reversed and emulated. The idea of the protocol was much clearer. It handled discovery of printers. It also checked through the WHO_IS_HOLDING query for who is holding the printer. If the printer responded with the asking device’s ip the SDK will proceed and attempt to print. If it responded with zeros it will also proceed and connect to the ESC/POS port 9100 and attempt to print. However, if any other IP was holding, the SDK will wait. As soon as a connection is established to port 9100. The holding IP is updated. That is basically what EPSON did to solve holding and prioritizing issues during printing with multiple devices. This is also what all other printers lacked. Now, there are still other issues with ESC/POS that this simple ENPC holding check is not enough to fix.\nNext in line was attempting to print using the emulated printer and watching the ESC/POS data flow. However. the TM-m30 had other tricks built in into its ESC/POS allowing it to be more reliable and also preventing a simple replay of packets from working. Starting with regular status messages from the printer to the SDK through ESC/POS. And also better queuing.\nI was able to identify many of the commands through the ESC/POS Spec documentation. But, many of the commands sent from the printer were custom to the EPSON printer.\nThe ESC/POS printing process always started with a DLE DOT n command asking for real time transmission of printer status. (Which many printer did not implement!) .\nThe SDK will also attempt to periodically enable Automatic Status Back (ASB) expecting a response of 1400000f. There are many other ESC/POS exchanges that were missing from other printers. I decided to skim over those and just replay them back without understanding.\nif (hex_data == \"100401\") { socket.write(hexStringToBytes(\"16\") as Uint8Array); } if (hex_data.includes(\"1d61ff\")) { socket.write(hexStringToBytes(\"1400000f\") as Uint8Array); } if (hex_data == \"1b3d011d2845020006031d496e1b3d011d28450200060b\") { socket.write(hexStringToBytes(\"3727331f3600\") as Uint8Array); socket.write(hexStringToBytes(\"3d6e00372731311f3000\") as Uint8Array); } if (hex_data == \"10140801031401060208\") { socket.write(hexStringToBytes(\"372500\") as Uint8Array); } if (hex_data == \"101406040001031401060208\") { socket.write(hexStringToBytes(\"375c3000\") as Uint8Array); } Replaying packets was almost enough to get the ESC/POS printing process completed. However, one critical part was missing. an EPSON modified ESC/POS printjob queuing functionality! (The most important missing future causing issues in the other printers). As you can see below, at the end of EPSON’s ESC/POS printing commands, it sends a QR Model Select command. That’s weird, I wasn’t printing any QR codes. Also, the QR model function and other values did not match the ESC/POS spec.\nThe printer was responding with the same ASCII string 000001 appearing at the end in the QR Model select command. This ascii string changes to 000002 then 000003 with each print. Making it clear that this command is used to queue printing jobs and report their status back done to the SDK. With the last missing part understood. I started handling the command.\nif(hex_data.includes(\"1d28480600\")) { // Sets print job number and starting printing the buffer // Get Counter for current printjob const counter = hex_data.split(\"1d28480600\")[1].slice(4); instance.ESCPOSLastPrintJobCounter = counter; socket.write(hexStringToBytes(\"1400000f\") as Uint8Array); if (instance.ESCPOSLastConnectionSocket) { // Send that ESCPOS printingjob is done (custom EPSON message) socket.write(hexStringToBytes(`3722${instance.ESCPOSLastPrintJobCounter}00`) as Uint8Array); instance.ESCPOSLastConnectionSocket.destroy(); instance.is_holding = false; instance.holding_ip = \"00000000\"; instance.ESCPOSLastConnectionSocket = undefined; instance.ESCPOSLastPrintJobCounter = undefined; // Get image from last stored ESCPOS data generate_merged_bitmap_png(escpos_data_stored, [0]).then( (png_path) = { if (png_path) { instance.onReceipt(png_path); } }); escpos_data_stored = \"\"; } } With all that done. Now I can broadcast a TM-m30 printer. Connect to it, and get the ESC/POS data from printjobs.\nExtra ? To have more fun I decide to fire up Square POS. Connect to the printer and attempt to get the printer receipt. However, when I found no encoded text in the ESC/POS print data. I figured that Square was sending bitmap images instead of text. How to extract that? with some borrowed help from escpos-tools I wrote the following image processor which extracts the graphics data. Merges the bitmaps (since Square sends multiple) and converts it to a PNG using ffmpeg.\nimport { Buffer } from \"buffer\"; import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native'; import RNFS from \"react-native-fs\"; interface BitmapImage { height: number, width: number, bitmap: Buffer } // GS = 0x1D // ? = 0x38 // GraphicsLargeDataCmd = 0x4C const ESCPOS_GRAPHICS_LARGE_DATA_CMD = \"1d384c\"; /* command datasize a1 a2 x1 x2 y1 y2 data(len = datasize) 1d384c c2 1a 00 00 30 70 00 00 00 00 00 00 00 00 0000000000000000... */ const parseGraphicsDataBlocks = (graphics_hexdata_blocks: string[]): (BitmapImage | undefined)[] = { return graphics_hexdata_blocks.map((graphics_hexdata_block: string, index: number) = { let workable_graphics_hexdata_block = graphics_hexdata_block; // Extract datasize indicators (4 bytes) let datasize_indicators = workable_graphics_hexdata_block.slice(0, 4 * 2).match(/.{1,2}/g) as any; workable_graphics_hexdata_block = workable_graphics_hexdata_block.slice(4*2); datasize_indicators = datasize_indicators?.map( (n: string) = parseInt(n, 16)) as number[]; // Extract a1 = ?, a2 = 0x70 = StoreRasterFmtDataToPrintBufferGraphicsSubCmd (2 bytes) const [a1, a2] = workable_graphics_hexdata_block.slice(0, 2 * 2).match(/.{1,2}/g) as any; workable_graphics_hexdata_block = workable_graphics_hexdata_block.slice(2*2); // Pass over filler (4 bytes) workable_graphics_hexdata_block = workable_graphics_hexdata_block.slice(4*2); // Extract dimensions_indicators let dimensions_indicators = workable_graphics_hexdata_block.slice(0, 4 * 2).match(/.{1,2}/g) as any; workable_graphics_hexdata_block = workable_graphics_hexdata_block.slice(4*2); dimensions_indicators = dimensions_indicators.map( (n: string) = parseInt(n, 16)) as number[]; // Confirm function is StoreRasterFmtDataToPrintBufferGraphicsSubCmd if (a2 != \"70\") return; // Calculate datasize (Not used) const [d1, d2, d3, d4] = datasize_indicators; let datasize = (d1 + (d2 * 256) + (d3 * 65536) + (d4 * 16777216)) - 2; // Calculate width and height const [x1, x2, y1, y2] = dimensions_indicators; const width = x1 + (x2 * 256); const height = y1 + (y2 * 256); // Extract data let graphics_data = workable_graphics_hexdata_block.slice(0, ((width * (height)) / 8) * 2); // Convert to buffer const bitmap = Buffer.from(graphics_data, \"hex\"); // Logging console.log(`\\n[BLOCK #${index}]`); console.log(`\\tDatasize indicators (d1, d2, d3, d4): ${datasize_indicators}`); console.log(`\\tDatasize: ${datasize}`); console.log(`\\tDimensions indicators (x1, x2, y1, y2): ${dimensions_indicators}`); console.log(`\\tDimensions (w, h): (${width}, ${height})`); // Should be same as datasize console.log(`\\tBitmap data length: ${bitmap.length}`); return { width: width, height: height, bitmap: bitmap } }); } const getESCPOSGraphics = (hexdata: string): (BitmapImage | undefined)[] | undefined = { // Look for graphics cmds const graphicsLargeDataBlocks = hexdata.split(ESCPOS_GRAPHICS_LARGE_DATA_CMD); if (!graphicsLargeDataBlocks.length) return; // removes first (useless) item in array graphicsLargeDataBlocks.shift(); const bitmap_images = parseGraphicsDataBlocks(graphicsLargeDataBlocks); return bitmap_images; } const bitmapImageToPBM = (bitmap_image: BitmapImage): Buffer = { const header = Buffer.from(\"P4\\n\" + bitmap_image.width + \" \" + bitmap_image.height + \"\\n\"); const buffers = [header, bitmap_image.bitmap]; return Buffer.concat(buffers); } const mergeBitmapImages = (bitmap_images: BitmapImage[]): BitmapImage = { // Using first width return { width: bitmap_images[0].width, height: bitmap_images.reduce((p, current) = p + current.height, 0), bitmap: Buffer.concat(bitmap_images.map( bitmap_image = bitmap_image.bitmap)) } } export const generate_merged_bitmap_png = async (hex_escpos_data: string, skip_indecies: number[]): Promise= { return new Promise( async (resolve, reject) = { let bitmap_images = getESCPOSGraphics(hex_escpos_data); if (bitmap_images) { bitmap_images = bitmap_images.filter( (_, index) = !skip_indecies.includes(index) ); const bitmap_images_merged = mergeBitmapImages(bitmap_images as BitmapImage[]); const pbm_image = bitmapImageToPBM(bitmap_images_merged); const pbm_path = RNFS.DocumentDirectoryPath + `/escpos-print.pbm`; const png_path = RNFS.DocumentDirectoryPath + `/escpos-print.png`; let buf = ''; pbm_image.map((v, i, a) = { buf += String.fromCharCode(v); return 0; }) RNFS.writeFile(pbm_path, buf, 'ascii').then((success) = { console.log('FILE WRITTEN! to', pbm_path); FFmpegKit.execute(`-y -i ${pbm_path} ${png_path}`).then(async (session) = { const returnCode = await session.getReturnCode(); if (ReturnCode.isSuccess(returnCode)) { // SUCCESS console.log('FILE WRITTEN! to', png_path); resolve(png_path); } else { // ERROR reject(); } }); }).catch((error) = { console.log(error); reject(); }) } }); } I made the project using react-native, and typescript in order to broadcast the printer using my mobile device, then get the printed image in view for fun. This was the end result Conclusion Other than having fun, and hopefully this post being helpful to someone. The project was of no help in discovering a solution to other printers. There is in my opinion no solutions, other than having a printer run a custom firmware, or just use an EPSON printer or any other printer that has a a custom firmware and SDKs. There is a reason why many POSs only support specific printers.\n","wordCount":"2944","inLanguage":"en","image":"https://wes4m.io/%3Cimage%20path/url%3E","datePublished":"2022-09-02T21:29:19+03:00","dateModified":"2022-09-02T21:29:19+03:00","author":{"@type":"Person","name":"wes4m"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://wes4m.io/posts/epson_rev/"},"publisher":{"@type":"Organization","name":"wes4m","logo":{"@type":"ImageObject","url":"https://wes4m.io/favicon.ico"}}}</script>
+</head>
+<body id=top>
+<script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add('dark'):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove('dark'):window.matchMedia('(prefers-color-scheme: dark)').matches&&document.body.classList.add('dark')</script>
+<header class=header>
+<nav class=nav>
+<div class=logo>
+<a href=https://wes4m.io/ accesskey=h title="./ (Alt + H)">./</a>
+<div class=logo-switches>
+<button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+</button>
+</div>
+</div>
+<ul id=menu>
+<li>
+<a href=https://wes4m.io/tags/ title=Tags>
+<span>Tags</span>
+</a>
+</li>
+</ul>
+</nav>
+</header>
+<main class=main>
+<article class=post-single>
+<header class=post-header>
+<div class=breadcrumbs><a href=https://wes4m.io/>Home</a>&nbsp;»&nbsp;<a href=https://wes4m.io/posts/>Posts</a></div>
+<h1 class=post-title dir=ltr>
+Reverse engineering thermal printers
+</h1>
+<div class=post-meta dir=ltr><span title="2022-09-02 21:29:19 +0300 +0300">September 2, 2022</span>&nbsp;·&nbsp;14 min&nbsp;·&nbsp;wes4m&nbsp;|&nbsp;<a href=https://github.com/wes4m/wes4m.github.io/tree/drafting/content/posts/epson_rev.md rel="noopener noreferrer" target=_blank>Suggest Changes</a>
+</div>
+</header>
+<div class=post-content dir=ltr><p>A significant part of my current work involves dealing with thermal printers to print receipts, invoices, item slips etc ..; For those unfamiliar. I&rsquo;m talking about those usually small cashier side printers that print your receipts when you buy something from a restaurant, or any other shop.</p>
+<p>Thermal printers use a universal protocol to send/receive printing commands. This protocol is called <code>ESC/POS</code>. For anyone stumbling on to this post trying to figure-out what the heck is going on with those printers, I feel you. Buffering issues, printer not printing, queuing issues, junk printing, delayed printing, connection loss, data leaks, the list goes on. At some point, I started wondering why does EPSON printers have none of these issues while others did?. This led to the curious investigation and reverse engineering of the EPSON TM-m30 printer.</p>
+<p>First, Some nuances there are multiple versions of <code>ESC/POS</code>. Not officially. But there are many minor differences between manufacturers making different models of those thermal printers. Each deciding to add custom <code>ESC/POS</code> functions, since the protocol allows that. Some ignoring certain <code>ESC/POS</code> commands. And many having undocumented methods. Some provide their own SDKs like EPSON, who by the way, are the creators of <code>ESC/POS</code>. What makes this hard to discover is that an <code>ESC/POS</code> SDK will usually work and print on all the printers you have. Until it doesn&rsquo;t for some unknown reason. To fix issues you will probably start adding random delays; and that will work for a while. Then, network speed will break it, print page size could break it, using different OS? will break it. You will try managing the queue yourself. Even that is still not a fix. Everything you end up doing is basically guesswork trying to support a bad protocol that lacks necessary feedback, queuing, and other important functionalities.</p>
+<h2 id=epsons-fix>EPSON&rsquo;s Fix<a hidden class=anchor aria-hidden=true href=#epsons-fix>#</a></h2>
+<p>The obvious solution of course, is to have a better protocol/s that communicate back printing status feedback, does error handling/correction, and queuing. This is exactly what EPSON did. A proprietary modified <code>ESC/POS</code> combined with another proprietary protocol for orchestrating printing, discovery, etc &mldr;</p>
+<h1 id=re-1>RE 1<a hidden class=anchor aria-hidden=true href=#re-1>#</a></h1>
+<p>So I went to work. Trying to take the easier path I downloaded EPSON&rsquo;s JS SDK looking for their discovery method. The discovery method allows the SDK to discover all of EPSON&rsquo;s thermal printers connected to the network/bluetooth/USB. Since it was something not supported by <code>ESC/POS</code> itself, it must come from a different protocol. Turns out, their JS SDK does not have any of the methods I was looking for. Moving on, I downloaded their Windows SDK and started digging into it using IDA. During that time, I had a background nmap scan running for all TCP/UDP ports the printer was listening to.</p>
+<p>Results:</p>
+<pre tabindex=0><code>TCP 9100 which is the normal ESCPOS port
+TCP 443 which is the web server for admin and some API
+UDP 161 SNMP
+UDP 3289 ??
+
+</code></pre><p>Searching for port 3289 yields results about an <code>ENPC</code> protocol <a href=https://support.epson-europe.com/LFP/ECSP_SecurityGuideline_v1.1.1.pdf>ECSP_SecurityGuideline_v1.1.1.pdf</a>
+<img loading=lazy src=/images/ENPC_mention.png alt=ENPC>
+</p>
+<p>There is also this <a href=https://stackoverflow.com/questions/62870327/where-to-find-the-documentation-of-enpc-udp-port-3289-printer-discovery>Stackoverflow question</a> looking for <code>ENPC</code> documentation with a few comments linking to different <code>ENPC</code> references including one 2017 <a href=https://github.com/BlackLotus/epson-stuff>Github repo BlackLotus/epson-stuff</a> of an incomplete attempt at reversing <code>ENPC</code>.</p>
+<p>Looking more into the de-compiled SDK. I find the function <code>EpsonIoDiscoveryStart</code>. Following its calls I ended up at the Discovery thread which contained a loop that kept sending a UDP packet to the <code>ENPC</code> port starting with the string <code>ENPCQ</code> as shown below</p>
+<p><img loading=lazy src=/images/enpcq-1.png alt=ENPCQ-1>
+</p>
+<p>After sending it, it will try to receive a response as shown below.
+<img loading=lazy src=/images/enpcq-2.png alt=ENPCQ-2>
+</p>
+<p>Using the recieved response a comparison on the first 6 bytes of the packet will take place and later on the function <code>EpsonIoUpdatePrinterList</code> appears.
+<img loading=lazy src=/images/enpcq-3.png alt=ENPCQ-3>
+</p>
+<p>Looking deeper into it, there didn&rsquo;t seem to be any security mechanism in place. And trying to avoid IDA as much as I could. I decided to consider this enough data gathered to fire up Wireshark and start monitoring what a discovery exchange looks like for <code>ENPC</code>.</p>
+<p><img loading=lazy src=/images/rvi0-1.png alt=RVI0-1>
+At first glance, the device running the SDK and doing a discovery (IP <code>192.168.1.23</code>) sends a broadcast packet. Then the printer (IP <code>192.168.1.9</code>) replies. This exchange, alongside other packets in between, kept repeating.</p>
+<p>Filtering for important data the result is as shown.
+<img loading=lazy src=/images/rvi0-2.png alt=RVI0-2>
+</p>
+<p>It repeats in a blocks of 6 packets starting with the broadcast packet. This went on even after discovery, which means that the SDK continues to send discovery packets even after the printer is identified.</p>
+<p>Digging into the packets I started to notice some patterns.
+<img loading=lazy src=/images/rvi0-3.png alt=RVI0-3>
+<img loading=lazy src=/images/rvi0-4.png alt=RVI0-4>
+</p>
+<p>It looks like every message going out from the SDK is starting with the <code>EPSONQ</code> string. The same string I found in IDA. While the response from the printer starts with <code>EPSONq</code>. There are also other packets going out from the SDK starting with the string <code>EPSONC</code> while the response starts with <code>EPSONc</code>.
+This looked like how <code>ENPC</code> was differentiating between <code>Q = QUERY</code> and <code>q = QUERY RESPONSE</code>. Also, <code>C = COMMAND</code> and <code>c = COMMAND RESPONSE</code>.</p>
+<p>Having figured out the first part of the packet. I started looking into the following bytes. It seemed like the next 4 bytes coming after the <code>EPSON{X}</code>, X being either a query/command message/response, were also consistent between message and response. The bytes after those 4 bytes were also always of consistent size. This was good enough to identify those 4 bytes as the Query or Command <code>function/operation number</code>.
+With this in mind. The initial discovery query message had another 4 bytes.</p>
+<pre tabindex=0><code>0000   45 50 53 4f 4e 51 03 00 00 00 00 00 00 00         EPSONQ........
+
+EPSONQ = Query message
+03 00 00 00 = Function number
+00 00 00 00 = ??
+</code></pre><p>Considering this. I started looking into the other packets and noticed that some packets had extra bytes. For those packets, the unidentified 4 bytes were reflecting a number equal the number of the extra bytes. This was clear that the 4 Bytes meant the size of the coming message/response.</p>
+<p>For the next packet</p>
+<pre tabindex=0><code>0000   45 50 53 4f 4e 71 03 00 00 00 00 00 00 85 00 05   EPSONq..........
+0010   01 02 01 54 4d 2d 6d 33 30 00 00 00 00 00 00 00   ...TM-m30.......
+0020   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0030   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0040   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0050   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0060   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0070   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0080   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00   ................
+0090   00 00 00                                          ...
+
+EPSONq = Query response
+03 00 00 00 = Function number
+00 00 00 85 = Response size
+Extra bytes = the response which had the printer model name and matched the response size
+</code></pre><p>Looking into more packets</p>
+<pre tabindex=0><code>0000   45 50 53 4f 4e 71 00 00 00 10 00 00 00 17 01 02   EPSONq..........
+0010   00 00 00 00 00 00 04 c0 a8 01 09 ff ff ff 00 c0   ................
+0020   a8 01 01 80 7c                                    ....|
+
+EPSONq = Query response
+00 00 00 10 = Function number (different function)
+... 
+</code></pre><p>Now this packet had non ASCII data. However, if you&rsquo;ve ever done network stuff in hex you would notice something very familiar. <code>ff ff ff 00</code> this is equivalent to <code>255.255.255.0</code> which happens to be my network netmask.
+Converting the other bytes to IPs I got matches for the printer IP, MAC address, and the network gateway IP.</p>
+<p>So far, I know that every query/command, for both message and response, follows this structure.</p>
+<pre tabindex=0><code>export interface ENPCMessage {
+    QC: string,
+    type_hex: string,
+    func_hex: string,
+    data_len_hex: string,
+    data_hex: string
+}
+</code></pre><p>Following the same process. through trial and error. I started printing and analyzed the packets. Identifying the most important functions list of <code>ENPC</code> queries/commands as follows</p>
+<pre tabindex=0><code>export const ENPC_QUERIES = {
+    [ENPC_QUERY_FUNCTIONS.DISCOVER_INFO_BROADCAST]: &quot;00000000&quot;,
+    [ENPC_QUERY_FUNCTIONS.DISCOVER_INFO]: &quot;03000010&quot;,
+    [ENPC_QUERY_FUNCTIONS.DISCOVER_DEVICE_NAME]: &quot;03000000&quot;,
+    [ENPC_QUERY_FUNCTIONS.WHO_IS_HOLDING]: &quot;03000017&quot;,
+
+    [ENPC_QUERY_FUNCTIONS.UNKNOWN_DISCOVER]: &quot;00000010&quot;,
+};
+
+export const ENPC_COMMANDS = {
+    [ENPC_COMMAND_FUNCTIONS.UNKNOWN_COMMAND_1]: &quot;03000015&quot;,
+    [ENPC_COMMAND_FUNCTIONS.UNKNOWN_COMMAND_2_CHECK]: &quot;03000016&quot;
+};
+</code></pre><p>At this point, I thought about writing a simple spoofer that listens on port 3289 and broadcasts itself as <code>TM-m30</code> printer. Attempting it with a simple replay of packets did not work, obviously. Because the SDK tries to reach the printer using the provided information from the <code>DISCOVER_INFO</code> query response. This meant that I needed to also build packets with the <code>spoofer</code> device info (ip, and mac address). This was fairly easy with all the important queries identified.</p>
+<pre tabindex=0><code>private getQueryResponse(function_hex: string): Uint8Array | undefined {
+    const func_name = dictContainsValue(ENPC_QUERIES, function_hex);
+
+    if (func_name) {
+        let response: Uint8Array | boolean | undefined = false;
+
+        if (func_name == ENPC_QUERY_FUNCTIONS.DISCOVER_INFO_BROADCAST) {
+            response = this.ENPC_parser.makeENPC(
+                &quot;q&quot;,
+                ENPC_QUERIES.DISCOVER_INFO_BROADCAST,
+                &quot;00000036&quot;,
+                `55422d45454145303833454e534e0000000000000000000000000000000000000001ffff15000200${this.mac_address}0000000100000001`
+            );
+        }
+
+        if (func_name == ENPC_QUERY_FUNCTIONS.DISCOVER_DEVICE_NAME) {
+            response = this.ENPC_parser.makeENPC(
+                &quot;q&quot;,
+                ENPC_QUERIES.DISCOVER_DEVICE_NAME,
+                &quot;00000085&quot;,
+                `0005010201544d2d6d33300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000`
+            );
+        }
+
+        if (func_name == ENPC_QUERY_FUNCTIONS.UNKNOWN_DISCOVER) {
+            response = this.ENPC_parser.makeENPC(
+                &quot;q&quot;,
+                ENPC_QUERIES.UNKNOWN_DISCOVER,
+                &quot;00000017&quot;,
+                `01${this.mac_address}0004${this.ip}${this.netmask}${this.gateway}807c`
+            );
+        }
+
+        if (func_name == ENPC_QUERY_FUNCTIONS.DISCOVER_INFO) {
+            response = this.ENPC_parser.makeENPC(
+                &quot;q&quot;,
+                ENPC_QUERIES.DISCOVER_INFO,
+                &quot;0000000d&quot;,
+                `0e1400000fffffffff39414000`
+            );
+        }
+
+        if (func_name == ENPC_QUERY_FUNCTIONS.WHO_IS_HOLDING) {
+            // 00 00 00 00 = No one is holding
+            // Anything else = ip address for ip holding it
+            let current_holding_ip = &quot;00000000&quot;;
+            if (this.is_holding) {
+                current_holding_ip = this.holding_ip;
+            }
+            response = this.ENPC_parser.makeENPC(
+                &quot;q&quot;,
+                ENPC_QUERIES.WHO_IS_HOLDING,
+                &quot;00000004&quot;,
+                current_holding_ip
+            );
+
+        }
+
+        if (response) {
+            console.log(`\tResponding to query with: ${bytesToHexString(response)}`)
+            return response;
+        }
+    }
+
+    console.log(&quot;\tTrying to respond to a function not in queries list&quot;);
+    return undefined;
+}
+</code></pre><p>Listening on port 3289. Then responding with the above responses; successfully broadcasted a fake <code>TM-m30</code> printer.</p>
+<h2 id=re-2>RE 2<a hidden class=anchor aria-hidden=true href=#re-2>#</a></h2>
+<p>With the most important parts of <code>ENPC</code> reversed and emulated. The idea of the protocol was much clearer. It handled discovery of printers. It also checked through the <code>WHO_IS_HOLDING</code> query for who is holding the printer. If the printer responded with the asking device&rsquo;s ip the SDK will proceed and attempt to print. If it responded with zeros it will also proceed and connect to the <code>ESC/POS</code> port 9100 and attempt to print. However, if any other IP was holding, the SDK will wait. As soon as a connection is established to port 9100. The holding IP is updated. That is basically what EPSON did to solve holding and prioritizing issues during printing with multiple devices. This is also what all other printers lacked. Now, there are still other issues with <code>ESC/POS</code> that this simple <code>ENPC</code> holding check is not enough to fix.</p>
+<p>Next in line was attempting to print using the emulated printer and watching the <code>ESC/POS</code> data flow. However. the TM-m30 had other tricks built in into its <code>ESC/POS</code> allowing it to be more reliable and also preventing a simple replay of packets from working.
+Starting with regular status messages from the printer to the SDK through <code>ESC/POS</code>. And also better queuing.</p>
+<p>I was able to identify many of the commands through the <a href=https://aures-support.com/DATA/drivers/Imprimantes/Commande%20ESCPOS.pdf>ESC/POS Spec documentation</a>. But, many of the commands sent from the printer were custom to the EPSON printer.</p>
+<p>The <code>ESC/POS</code> printing process always started with a <code>DLE DOT n</code> command asking for real time transmission of printer status. (Which many printer did not implement!)
+<img loading=lazy src=/images/ESCPOS-1.png alt=ESCPOS-1>
+.</p>
+<p>The SDK will also attempt to periodically enable Automatic Status Back (ASB) expecting a response of <code>1400000f</code>.
+There are many other <code>ESC/POS</code> exchanges that were missing from other printers. I decided to skim over those and just replay them back without understanding.</p>
+<pre tabindex=0><code>if (hex_data == &quot;100401&quot;) {
+    socket.write(hexStringToBytes(&quot;16&quot;) as Uint8Array);
+}
+if (hex_data.includes(&quot;1d61ff&quot;)) {
+    socket.write(hexStringToBytes(&quot;1400000f&quot;) as Uint8Array);
+}
+if (hex_data == &quot;1b3d011d2845020006031d496e1b3d011d28450200060b&quot;) {
+    socket.write(hexStringToBytes(&quot;3727331f3600&quot;) as Uint8Array);
+    socket.write(hexStringToBytes(&quot;3d6e00372731311f3000&quot;) as Uint8Array);
+}
+if (hex_data == &quot;10140801031401060208&quot;) {
+    socket.write(hexStringToBytes(&quot;372500&quot;) as Uint8Array);
+}
+if (hex_data == &quot;101406040001031401060208&quot;) {
+    socket.write(hexStringToBytes(&quot;375c3000&quot;) as Uint8Array);
+}
+</code></pre><p>Replaying packets was almost enough to get the <code>ESC/POS</code> printing process completed. However, one critical part was missing. an EPSON modified <code>ESC/POS</code> printjob queuing functionality! (The most important missing future causing issues in the other printers). As you can see below, at the end of EPSON&rsquo;s <code>ESC/POS</code> printing commands, it sends a QR Model Select command. That&rsquo;s weird, I wasn&rsquo;t printing any QR codes. Also, the QR model function and other values did not match the <code>ESC/POS</code> spec.</p>
+<p><img loading=lazy src=/images/ESCPOS-2.png alt=ESCPOS-2>
+<img loading=lazy src=/images/ESCPOS-3.png alt=ESCPOS-3>
+</p>
+<p>The printer was responding with the same ASCII string <code>000001</code> appearing at the end in the QR Model select command.
+<img loading=lazy src=/images/ESCPOS-4.png alt=ESCPOS-4>
+</p>
+<p>This ascii string changes to <code>000002</code> then <code>000003</code> with each print. Making it clear that this command is used to queue printing jobs and report their status back <code>done</code> to the SDK. With the last missing part understood. I started handling the command.</p>
+<pre tabindex=0><code>if(hex_data.includes(&quot;1d28480600&quot;)) {
+    // Sets print job number and starting printing the buffer
+
+    // Get Counter for current printjob
+    const counter = hex_data.split(&quot;1d28480600&quot;)[1].slice(4);
+    instance.ESCPOSLastPrintJobCounter = counter;
+    socket.write(hexStringToBytes(&quot;1400000f&quot;) as Uint8Array);
+
+    if (instance.ESCPOSLastConnectionSocket) {
+        // Send that ESCPOS printingjob is done (custom EPSON message)
+        socket.write(hexStringToBytes(`3722${instance.ESCPOSLastPrintJobCounter}00`) as Uint8Array);
+
+        instance.ESCPOSLastConnectionSocket.destroy();
+        instance.is_holding = false;
+        instance.holding_ip = &quot;00000000&quot;;
+        instance.ESCPOSLastConnectionSocket = undefined;
+        instance.ESCPOSLastPrintJobCounter = undefined;
+
+        // Get image from last stored ESCPOS data
+        generate_merged_bitmap_png(escpos_data_stored, [0]).then( (png_path) =&gt; {
+            if (png_path) {
+                instance.onReceipt(png_path);
+            }
+        });
+
+        escpos_data_stored = &quot;&quot;;
+    }
+}
+</code></pre><p>With all that done. Now I can broadcast a TM-m30 printer. Connect to it, and get the <code>ESC/POS</code> data from printjobs.</p>
+<h2 id=extra->Extra ?<a hidden class=anchor aria-hidden=true href=#extra->#</a></h2>
+<p>To have more fun I decide to fire up Square POS. Connect to the printer and attempt to get the printer receipt. However, when I found no encoded text in the <code>ESC/POS</code> print data. I figured that Square was sending bitmap images instead of text. How to extract that? with some borrowed help from <a href=https://github.com/receipt-print-hq/escpos-tools>escpos-tools</a> I wrote the following image processor which extracts the graphics data. Merges the bitmaps (since Square sends multiple) and converts it to a <code>PNG</code> using ffmpeg.</p>
+<pre tabindex=0><code>import { Buffer } from &quot;buffer&quot;;
+import { FFmpegKit, ReturnCode } from 'ffmpeg-kit-react-native';
+import RNFS from &quot;react-native-fs&quot;;
+
+interface BitmapImage {
+    height: number,
+    width: number,
+    bitmap: Buffer
+}
+
+
+// GS = 0x1D
+// ? = 0x38
+// GraphicsLargeDataCmd = 0x4C
+const ESCPOS_GRAPHICS_LARGE_DATA_CMD = &quot;1d384c&quot;;
+
+/*
+command  datasize      a1 a2                                x1   x2  y1   y2    data(len = datasize)
+1d384c c2 1a 00 00     30 70        00    00    00   00     00   00  00   00    0000000000000000...
+*/
+const parseGraphicsDataBlocks = (graphics_hexdata_blocks: string[]): (BitmapImage | undefined)[] =&gt; {
+
+    return graphics_hexdata_blocks.map((graphics_hexdata_block: string, index: number) =&gt; {
+        
+        let workable_graphics_hexdata_block = graphics_hexdata_block;
+
+        // Extract datasize indicators (4 bytes)
+        let datasize_indicators = workable_graphics_hexdata_block.slice(0, 4 * 2).match(/.{1,2}/g) as any;
+        workable_graphics_hexdata_block = workable_graphics_hexdata_block.slice(4*2);
+        datasize_indicators = datasize_indicators?.map( (n: string) =&gt; parseInt(n, 16)) as number[];
+
+        // Extract a1 = ?, a2 = 0x70 = StoreRasterFmtDataToPrintBufferGraphicsSubCmd (2 bytes)
+        const [a1, a2] = workable_graphics_hexdata_block.slice(0, 2 * 2).match(/.{1,2}/g) as any;
+        workable_graphics_hexdata_block = workable_graphics_hexdata_block.slice(2*2);
+
+        // Pass over filler (4 bytes)
+        workable_graphics_hexdata_block = workable_graphics_hexdata_block.slice(4*2);
+
+        // Extract dimensions_indicators
+        let dimensions_indicators = workable_graphics_hexdata_block.slice(0, 4 * 2).match(/.{1,2}/g) as any;
+        workable_graphics_hexdata_block = workable_graphics_hexdata_block.slice(4*2);
+        dimensions_indicators = dimensions_indicators.map( (n: string) =&gt; parseInt(n, 16)) as number[];
+
+        // Confirm function is StoreRasterFmtDataToPrintBufferGraphicsSubCmd
+        if (a2 != &quot;70&quot;) return;
+
+        // Calculate datasize (Not used)
+        const [d1, d2, d3, d4] = datasize_indicators;
+        let datasize = (d1 + (d2 * 256) + (d3 * 65536) + (d4 * 16777216)) - 2;
+
+        
+        // Calculate width and height
+        const [x1, x2, y1, y2] = dimensions_indicators;
+        const width = x1 + (x2 * 256);
+        const height = y1 + (y2 * 256);
+
+
+        // Extract data
+        let graphics_data = workable_graphics_hexdata_block.slice(0, ((width * (height)) / 8) * 2);
+
+        // Convert to buffer
+        const bitmap = Buffer.from(graphics_data, &quot;hex&quot;);
+        
+
+        // Logging
+        console.log(`\n[BLOCK #${index}]`);
+        console.log(`\tDatasize indicators (d1, d2, d3, d4): ${datasize_indicators}`);
+        console.log(`\tDatasize: ${datasize}`);
+        console.log(`\tDimensions indicators (x1, x2, y1, y2): ${dimensions_indicators}`);
+        console.log(`\tDimensions (w, h): (${width}, ${height})`);
+        // Should be same as datasize
+        console.log(`\tBitmap data length: ${bitmap.length}`);
+
+        return {
+            width: width,
+            height: height,
+            bitmap: bitmap
+        }
+
+    });
+
+}
+
+const getESCPOSGraphics = (hexdata: string): (BitmapImage | undefined)[] | undefined =&gt; {
+
+    // Look for graphics cmds
+    const graphicsLargeDataBlocks = hexdata.split(ESCPOS_GRAPHICS_LARGE_DATA_CMD);
+    if (!graphicsLargeDataBlocks.length) return;
+
+    // removes first (useless) item in array 
+    graphicsLargeDataBlocks.shift();
+
+    const bitmap_images = parseGraphicsDataBlocks(graphicsLargeDataBlocks);
+    return bitmap_images;
+}
+
+
+const bitmapImageToPBM = (bitmap_image: BitmapImage): Buffer =&gt; {
+    const header = Buffer.from(&quot;P4\n&quot; + bitmap_image.width + &quot; &quot; + bitmap_image.height + &quot;\n&quot;);
+    const buffers = [header, bitmap_image.bitmap];
+    return Buffer.concat(buffers);
+}
+
+const mergeBitmapImages = (bitmap_images: BitmapImage[]): BitmapImage =&gt; {
+    // Using first width
+    return {
+        width: bitmap_images[0].width,
+        height: bitmap_images.reduce((p, current) =&gt; p + current.height, 0), 
+        bitmap: Buffer.concat(bitmap_images.map( bitmap_image =&gt; bitmap_image.bitmap))
+    }
+}
+
+
+export const generate_merged_bitmap_png = async (hex_escpos_data: string, skip_indecies: number[]): Promise&lt;string | undefined&gt; =&gt; {
+    return new Promise&lt;string | undefined&gt;( async (resolve, reject) =&gt; {
+
+
+        let bitmap_images = getESCPOSGraphics(hex_escpos_data);
+        if (bitmap_images) {
+
+            bitmap_images = bitmap_images.filter( (_, index) =&gt; !skip_indecies.includes(index) );
+            const bitmap_images_merged = mergeBitmapImages(bitmap_images as BitmapImage[]);
+            const pbm_image = bitmapImageToPBM(bitmap_images_merged);
+            const pbm_path = RNFS.DocumentDirectoryPath + `/escpos-print.pbm`;
+            const png_path = RNFS.DocumentDirectoryPath + `/escpos-print.png`;
+    
+            let buf = '';
+            pbm_image.map((v, i, a) =&gt; {
+                buf += String.fromCharCode(v);
+                return 0;
+            })
+           
+
+            RNFS.writeFile(pbm_path, buf, 'ascii').then((success) =&gt; {
+                console.log('FILE WRITTEN! to', pbm_path);
+
+                FFmpegKit.execute(`-y -i ${pbm_path} ${png_path}`).then(async (session) =&gt; {
+                    const returnCode = await session.getReturnCode();
+                    if (ReturnCode.isSuccess(returnCode)) {
+                      // SUCCESS
+                      console.log('FILE WRITTEN! to', png_path);
+                      resolve(png_path);
+                   } else {
+                      // ERROR
+                      reject();
+                    }
+                  });
+
+            }).catch((error) =&gt; {
+                console.log(error);
+                reject();
+            })
+
+        }
+
+
+    });
+}
+</code></pre><p>I made the project using react-native, and typescript in order to broadcast the printer using my mobile device, then get the printed image in view for fun. This was the end result
+<img loading=lazy src=/images/result.png alt=result>
+</p>
+<h2 id=conclusion>Conclusion<a hidden class=anchor aria-hidden=true href=#conclusion>#</a></h2>
+<p>Other than having fun, and hopefully this post being helpful to someone. The project was of no help in discovering a solution to other printers. There is in my opinion no solutions, other than having a printer run a custom firmware, or just use an EPSON printer or any other printer that has a a custom firmware and SDKs. There is a reason why many POSs only support specific printers.</p>
+</div>
+<footer class=post-footer>
+<ul class=post-tags dir=ltr>
+<li><a href=https://wes4m.io/tags/network/>Network</a></li>
+<li><a href=https://wes4m.io/tags/reverse/>Reverse</a></li>
+</ul>
+<nav class=paginav>
+<a class=next href=https://wes4m.io/posts/random_fun/>
+<span class=title>Next »</span>
+<br>
+<span>Fuzzing, Emulation, and Random low-level fun #1</span>
+</a>
+</nav>
+</footer>
+</article>
+</main>
+<footer class=footer>
+<span>&copy; 2022 <a href=https://wes4m.io/>wes4m</a></span>
+<span>
+Powered by
+<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
+        <a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a>
+</span>
+</footer>
+<a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg>
+</a>
+<script>let menu=document.getElementById('menu');menu&&(menu.scrollLeft=localStorage.getItem("menu-scroll-position"),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}),document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener("click",function(b){b.preventDefault();var a=this.getAttribute("href").substr(1);window.matchMedia('(prefers-reduced-motion: reduce)').matches?document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView({behavior:"smooth"}),a==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${a}`)})})</script>
+<script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script>
+<script>document.getElementById("theme-toggle").addEventListener("click",()=>{document.body.className.includes("dark")?(document.body.classList.remove('dark'),localStorage.setItem("pref-theme",'light')):(document.body.classList.add('dark'),localStorage.setItem("pref-theme",'dark'))})</script>
+</body>
+</html>

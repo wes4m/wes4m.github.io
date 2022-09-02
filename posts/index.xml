@@ -5,7 +5,17 @@
     <link>https://wes4m.io/posts/</link>
     <description>Recent content in Posts on wes4m</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Sun, 27 Dec 2020 03:49:01 -0700</lastBuildDate><atom:link href="https://wes4m.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 02 Sep 2022 21:29:19 +0300</lastBuildDate><atom:link href="https://wes4m.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Reverse engineering thermal printers</title>
+      <link>https://wes4m.io/posts/epson_rev/</link>
+      <pubDate>Fri, 02 Sep 2022 21:29:19 +0300</pubDate>
+      
+      <guid>https://wes4m.io/posts/epson_rev/</guid>
+      <description>A significant part of my current work involves dealing with thermal printers to print receipts, invoices, item slips etc ..; For those unfamiliar. I&amp;rsquo;m talking about those usually small cashier side printers that print your receipts when you buy something from a restaurant, or any other shop.
+Thermal printers use a universal protocol to send/receive printing commands. This protocol is called ESC/POS. For anyone stumbling on to this post trying to figure-out what the heck is going on with those printers, I feel you.</description>
+    </item>
+    
     <item>
       <title>Fuzzing, Emulation, and Random low-level fun #1</title>
       <link>https://wes4m.io/posts/random_fun/</link>
