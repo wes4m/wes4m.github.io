@@ -26,9 +26,9 @@ ShowWordCount: false
 ShowRssButtonInSectionTermList: false
 UseHugoToc: false
 cover:
-    image: "<image path/url>" # image path/url
-    alt: "<alt text>" # alt text
-    caption: "<text>" # display caption under cover
+    image: "/images/epsonrev-cover.png" # image path/url
+    alt: "" # alt text
+    caption: "" # display caption under cover
     relative: false # when using page bundles set this to true
     hidden: true # only hide on current single page
 ---
@@ -102,7 +102,10 @@ EPSONQ = Query message
 
 Considering this. I started looking into the other packets and noticed that some packets had extra bytes. For those packets, the unidentified 4 bytes were reflecting a number equal the number of the extra bytes. This was clear that the 4 Bytes meant the size of the coming message/response.
 
-For the next packet
+**Something interesting?** The ability to control message/response body length presents a good opportunity to test for buffer overflow. Data leaks, crashes ..
+I actually only noticed this while writing this post and will probably test it later. EPSON RCE maybe? :P.
+
+Anyway, on to the next packet
 ```
 0000   45 50 53 4f 4e 71 03 00 00 00 00 00 00 85 00 05   EPSONq..........
 0010   01 02 01 54 4d 2d 6d 33 30 00 00 00 00 00 00 00   ...TM-m30.......
