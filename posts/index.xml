@@ -1,70 +1,111 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
-  <channel>
-    <title>Posts on wes4m</title>
-    <link>https://wes4m.io/posts/</link>
-    <description>Recent content in Posts on wes4m</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Fri, 02 Sep 2022 21:29:19 +0300</lastBuildDate><atom:link href="https://wes4m.io/posts/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Reverse engineering thermal printers</title>
-      <link>https://wes4m.io/posts/epson_rev/</link>
-      <pubDate>Fri, 02 Sep 2022 21:29:19 +0300</pubDate>
-      
-      <guid>https://wes4m.io/posts/epson_rev/</guid>
-      <description>A significant part of my current work involves dealing with thermal printers to print receipts, invoices, item slips etc ..; For those unfamiliar. I&amp;rsquo;m talking about those usually small cashier side printers that print your receipts when you buy something from a restaurant, or any other shop.
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Posts on wes4m</title>
+        <link>https://wes4m.io/posts/</link>
+        <description>Recent content in Posts on wes4m</description>
+        <generator>Hugo -- gohugo.io</generator>
+        
+        
+        
+        
+        
+        <lastBuildDate>Fri, 02 Sep 2022 21:29:19</lastBuildDate>
+        <atom:link href="https://wes4m.io/posts/index.xml" rel="self" type="application/rss+xml" />
+        <item>
+            <title>Reverse engineering thermal printers</title>
+            <link>https://wes4m.io/posts/epson_rev/</link>
+            <pubDate>Fri, Sep 2 2022</pubDate>
+            
+            <guid>https://wes4m.io/posts/epson_rev/</guid>
+            <description>A significant part of my current work involves dealing with thermal printers to print receipts, invoices, item slips etc ..; For those unfamiliar. I&amp;rsquo;m talking about those usually small cashier side printers that print your receipts when you buy something from a restaurant, or any other shop.
 Thermal printers use a universal protocol to send/receive printing commands. This protocol is called ESC/POS. For anyone stumbling on to this post trying to figure-out what the heck is going on with those printers, I feel you.</description>
-    </item>
-    
-    <item>
-      <title>Fuzzing, Emulation, and Random low-level fun #1</title>
-      <link>https://wes4m.io/posts/random_fun/</link>
-      <pubDate>Sun, 27 Dec 2020 03:49:01 -0700</pubDate>
-      
-      <guid>https://wes4m.io/posts/random_fun/</guid>
-      <description>As the amazing year of 2020 comes to an end, I thought that this is the right time for me to start thinking about how to get involved in areas I have always been interested in but never put enough time and effort into. Basically, this is going to be a hands-on semi random blog post series of exploring mostly low-level computer science and security topics. The plan is to have no rigid plan, go by interest, and to have fun.</description>
-    </item>
-    
-    <item>
-      <title>إستغلال ثغرات المتصفح | Webbrowser exploitation</title>
-      <link>https://wes4m.io/posts/browser_exploitation/</link>
-      <pubDate>Mon, 25 Nov 2019 04:51:01 -0700</pubDate>
-      
-      <guid>https://wes4m.io/posts/browser_exploitation/</guid>
-      <description>Part 1</description>
-    </item>
-    
-    <item>
-      <title>إستغلال ثغرات النواة | Kernel exploitation</title>
-      <link>https://wes4m.io/posts/kernel_exploitation/</link>
-      <pubDate>Tue, 13 Aug 2019 04:51:01 -0700</pubDate>
-      
-      <guid>https://wes4m.io/posts/kernel_exploitation/</guid>
-      <description>من اكثر الامثلة شيوعآ للإستخدام في هذا الموضوع هي مصطلحات مثل Android rooting, IOS Jailbreak ، فالكثير منا على إطلاع بها وبالغرض منها. ولكن هل تسائلت من قبل كيف تعمل في عمقها ؟
+            
+            <category>Network</category>
+            
+            <category>Reverse</category>
+            
+        </item>
+        
+        <item>
+            <title>Fuzzing, Emulation, and Random low-level fun #1</title>
+            <link>https://wes4m.io/posts/random_fun/</link>
+            <pubDate>Sun, Dec 27 2020</pubDate>
+            
+            <guid>https://wes4m.io/posts/random_fun/</guid>
+            <description>As the amazing year of 2020 comes to an end, I thought that this is the right time for me to start thinking about how to get involved in areas I have always been interested in but never put enough time and effort into. Basically, this is going to be a hands-on semi random blog post series of exploring mostly low-level computer science and security topics. The plan is to have no rigid plan, go by interest, and to have fun.</description>
+            
+            <category>Random</category>
+            
+        </item>
+        
+        <item>
+            <title>إستغلال ثغرات المتصفح | Webbrowser exploitation</title>
+            <link>https://wes4m.io/posts/browser_exploitation/</link>
+            <pubDate>Mon, Nov 25 2019</pubDate>
+            
+            <guid>https://wes4m.io/posts/browser_exploitation/</guid>
+            <description>تنويه: إستغلال ثغرات المتصفحات ليس من إختصاصي إنما هذه السلسلة عبارة عن تدوين مستمر لطريقي في خوض هذا المجال وتعزيز لفهمي. أي اغلاط او اضافات أكون شاكر لكم. ملاحظة: إطلاع سابق وفهم كيفية عمل لغات البرمجة. والـ Interpreters بشكل سطحي مهمة جدآ لهذا الموضوع.
+ قبل الخوض في إستغلال ثغرات المتصفحات يجب أن نكون على إطلاع بأن المتصفحات في هذا الوقت أصبحت من أضخم وأهم البرمجيات قد توازي في تعقيدها أنظمة التشغيل نظرآ لتكونها من عناصر عديدة مترابطة ومعقدة.</description>
+            
+            <category>Misc</category>
+            
+        </item>
+        
+        <item>
+            <title>إستغلال ثغرات النواة | Kernel exploitation</title>
+            <link>https://wes4m.io/posts/kernel_exploitation/</link>
+            <pubDate>Tue, Aug 13 2019</pubDate>
+            
+            <guid>https://wes4m.io/posts/kernel_exploitation/</guid>
+            <description>من اكثر الامثلة شيوعآ للإستخدام في هذا الموضوع هي مصطلحات مثل Android rooting, IOS Jailbreak ، فالكثير منا على إطلاع بها وبالغرض منها. ولكن هل تسائلت من قبل كيف تعمل في عمقها ؟
 أيضآ لماذا لايمكنك إنهاء عمليات الـ Anti virus من مدير المهام في نظام وندوز بكل بساطة ؟ أو كيف تخفي بعض ملفات الإختراق نفسها عن برامج تتبع الإتصالات ومدير المهام وغيره.
 كل هذه الإمور والكثير من الأمثلة الإخرى يمكن تنفيذها بعدة طرق أحدها ومن أهمها هي إستخدام نواة النظام وإستغلالها.</description>
-    </item>
-    
-    <item>
-      <title>حل تحدي Production - DragonCTF</title>
-      <link>https://wes4m.io/posts/dragonsector_production/</link>
-      <pubDate>Mon, 08 Oct 2018 04:51:01 -0700</pubDate>
-      
-      <guid>https://wes4m.io/posts/dragonsector_production/</guid>
-      <description>من مشاركتي مع فريق @Shellphish إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة والمليئة بالمعلومات.
+            
+            <category>Kernel</category>
+            
+            <category>Linux</category>
+            
+            <category>PWN</category>
+            
+            <category>Misc</category>
+            
+        </item>
+        
+        <item>
+            <title>حل تحدي Production - DragonCTF</title>
+            <link>https://wes4m.io/posts/dragonsector_production/</link>
+            <pubDate>Mon, Oct 8 2018</pubDate>
+            
+            <guid>https://wes4m.io/posts/dragonsector_production/</guid>
+            <description>من مشاركتي مع فريق @Shellphish إنتهت المسابقة بحصول الفريق على المركز الأول وكان هذا أحد التحديات الممتعة والمليئة بالمعلومات.
 سأقوم بشرح لطريقة حل التحدي وشرح المعلومات المهمة في الحل
 صورة من التحدي لمن ليس لديه معلومات ماهي تحديات CTF , Capture the flag هي طريقة ممتعة ومن أفضل الطرق بل أعتبرها في نظري من أهم الطرق في تعلم طرق الإختراق والهندسة العكسية والتشفير وغيرها من عمليات أساسية في الأمن السيبراني لمعلومات أكثر يمكنك قراءة شرح ممتاز من هنا</description>
-    </item>
-    
-    <item>
-      <title>آلية عمل | PE Infection</title>
-      <link>https://wes4m.io/posts/pe_infection/</link>
-      <pubDate>Sun, 12 Aug 2018 04:51:01 -0700</pubDate>
-      
-      <guid>https://wes4m.io/posts/pe_infection/</guid>
-      <description>توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة. طرق الحماية في نهاية المقال. كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.
+            
+            <category>CTF</category>
+            
+            <category>Linux</category>
+            
+            <category>PWN</category>
+            
+            <category>Misc</category>
+            
+        </item>
+        
+        <item>
+            <title>آلية عمل | PE Infection</title>
+            <link>https://wes4m.io/posts/pe_infection/</link>
+            <pubDate>Sun, Aug 12 2018</pubDate>
+            
+            <guid>https://wes4m.io/posts/pe_infection/</guid>
+            <description>توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة. طرق الحماية في نهاية المقال. كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.
 ماهي عدوى الملفات التنفيذية أو PE Infection هي من أقدم الطرق المستخدمة في نشر الملفات الخبيثة من باك دورز أو فايروسات وغيره في الجهاز.</description>
-    </item>
-    
-  </channel>
+            
+            <category>Malware</category>
+            
+            <category>Windows</category>
+            
+        </item>
+        
+    </channel>
 </rss>
