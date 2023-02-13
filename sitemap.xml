@@ -2,22 +2,31 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://wes4m.io/tags/network/</loc>
-    <lastmod>2022-09-02T21:29:19+03:00</lastmod>
+    <loc>https://wes4m.io/tags/dev/</loc>
+    <lastmod>2023-02-10T22:59:52+03:00</lastmod>
+  </url><url>
+    <loc>https://wes4m.io/tags/golang/</loc>
+    <lastmod>2023-02-10T22:59:52+03:00</lastmod>
   </url><url>
     <loc>https://wes4m.io/posts/</loc>
+    <lastmod>2023-02-10T22:59:52+03:00</lastmod>
+  </url><url>
+    <loc>https://wes4m.io/posts/ta-dataflow-programming/</loc>
+    <lastmod>2023-02-10T22:59:52+03:00</lastmod>
+  </url><url>
+    <loc>https://wes4m.io/tags/</loc>
+    <lastmod>2023-02-10T22:59:52+03:00</lastmod>
+  </url><url>
+    <loc>https://wes4m.io/</loc>
+    <lastmod>2023-02-10T22:59:52+03:00</lastmod>
+  </url><url>
+    <loc>https://wes4m.io/tags/network/</loc>
     <lastmod>2022-09-02T21:29:19+03:00</lastmod>
   </url><url>
     <loc>https://wes4m.io/tags/reverse/</loc>
     <lastmod>2022-09-02T21:29:19+03:00</lastmod>
   </url><url>
     <loc>https://wes4m.io/posts/epson_rev/</loc>
-    <lastmod>2022-09-02T21:29:19+03:00</lastmod>
-  </url><url>
-    <loc>https://wes4m.io/tags/</loc>
-    <lastmod>2022-09-02T21:29:19+03:00</lastmod>
-  </url><url>
-    <loc>https://wes4m.io/</loc>
     <lastmod>2022-09-02T21:29:19+03:00</lastmod>
   </url><url>
     <loc>https://wes4m.io/posts/random_fun/</loc>

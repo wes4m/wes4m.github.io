@@ -5,7 +5,25 @@
     <link>https://wes4m.io/tags/</link>
     <description>Recent content in Tags on wes4m</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Fri, 02 Sep 2022 21:29:19 +0300</lastBuildDate><atom:link href="https://wes4m.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 10 Feb 2023 22:59:52 +0300</lastBuildDate><atom:link href="https://wes4m.io/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>dev</title>
+      <link>https://wes4m.io/tags/dev/</link>
+      <pubDate>Fri, 10 Feb 2023 22:59:52 +0300</pubDate>
+      
+      <guid>https://wes4m.io/tags/dev/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>golang</title>
+      <link>https://wes4m.io/tags/golang/</link>
+      <pubDate>Fri, 10 Feb 2023 22:59:52 +0300</pubDate>
+      
+      <guid>https://wes4m.io/tags/golang/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>Network</title>
       <link>https://wes4m.io/tags/network/</link>

@@ -10,8 +10,24 @@
         
         
         
-        <lastBuildDate>Fri, 02 Sep 2022 21:29:19</lastBuildDate>
+        <lastBuildDate>Fri, 10 Feb 2023 22:59:52</lastBuildDate>
         <atom:link href="https://wes4m.io/posts/index.xml" rel="self" type="application/rss+xml" />
+        <item>
+            <title>Side Project #9837: Visual Nodes Scripting</title>
+            <link>https://wes4m.io/posts/ta-dataflow-programming/</link>
+            <pubDate>Fri, Feb 10 2023</pubDate>
+            
+            <guid>https://wes4m.io/posts/ta-dataflow-programming/</guid>
+            <description>There are many visual programming implementations out there that make approaching some specific tasks easier. One of which is Unreal Engine&amp;rsquo;s Blueprint&amp;rsquo;s system.
+It provides game developers with a way to program visually by connecting different nodes. Each node taking in some inputs, and/or options, doing something with it, then outputing the results. You can also implement your own reuse-able nodes using C&#43;&#43;. It is apparently turing complete too.
+I wanted to make something similar for a project I&amp;rsquo;m working on, which brings us to: Data Flow Programming, Flow Based Programming, Node Graph Architecture, and a thousand other names.</description>
+            
+            <category>dev</category>
+            
+            <category>golang</category>
+            
+        </item>
+        
         <item>
             <title>Reverse engineering thermal printers</title>
             <link>https://wes4m.io/posts/epson_rev/</link>

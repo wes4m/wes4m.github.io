@@ -5,7 +5,16 @@
     <link>https://wes4m.io/</link>
     <description>Recent content on wes4m</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Fri, 02 Sep 2022 21:29:19 +0300</lastBuildDate><atom:link href="https://wes4m.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 10 Feb 2023 22:59:52 +0300</lastBuildDate><atom:link href="https://wes4m.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Side Project #9837: Visual Nodes Scripting</title>
+      <link>https://wes4m.io/posts/ta-dataflow-programming/</link>
+      <pubDate>Fri, 10 Feb 2023 22:59:52 +0300</pubDate>
+      
+      <guid>https://wes4m.io/posts/ta-dataflow-programming/</guid>
+      <description>Walkthrough implementing a data-flow-ishy nodes executor.</description>
+    </item>
+    
     <item>
       <title>Reverse engineering thermal printers</title>
       <link>https://wes4m.io/posts/epson_rev/</link>

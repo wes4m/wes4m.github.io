@@ -17,9 +17,10 @@
 <link rel=mask-icon href=https://wes4m.io/safari-pinned-tab.svg>
 <meta name=theme-color content="#2e2e33">
 <meta name=msapplication-TileColor content="#2e2e33">
+<script src=/dist/webcomponents-loader.js></script>
+<script src=/dist/gif-player.es6.js defer async></script>
 <noscript>
 <style>#theme-toggle,.top-link{display:none}</style>
-<style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--hljs-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51)}.list{background:var(--theme)}.list:not(.dark)::-webkit-scrollbar-track{background:0 0}.list:not(.dark)::-webkit-scrollbar-thumb{border-color:var(--theme)}}</style>
 </noscript>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-X4Z7CWYY5B"></script>
 <script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-X4Z7CWYY5B',{anonymize_ip:!1})}</script>
@@ -37,15 +38,12 @@
 <script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://wes4m.io/posts/"},{"@type":"ListItem","position":2,"name":"Fuzzing, Emulation, and Random low-level fun #1","item":"https://wes4m.io/posts/random_fun/"}]}</script>
 <script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Fuzzing, Emulation, and Random low-level fun #1","name":"Fuzzing, Emulation, and Random low-level fun #1","description":"As the amazing year of 2020 comes to an end, I thought that this is the right time for me to start thinking about how to get involved in areas I have always been interested in but never put enough time and effort into. Basically, this is going to be a hands-on semi random blog post series of exploring mostly low-level computer science and security topics. The plan is to have no rigid plan, go by interest, and to have fun.","keywords":["Random"],"articleBody":"As the amazing year of 2020 comes to an end, I thought that this is the right time for me to start thinking about how to get involved in areas I have always been interested in but never put enough time and effort into. Basically, this is going to be a hands-on semi random blog post series of exploring mostly low-level computer science and security topics. The plan is to have no rigid plan, go by interest, and to have fun. This first post is just laying out a possible timeline of the topics and ideas I will be going through and will later be updated to link the specific blog posts.\nFuzzing Not web applications fuzzing. I have always been interested in fuzzing. Whenever reading a writeup of some mind-blowing RCE the common entry point for that bug, or chain of bugs is usually fuzzing. I’ve done some fuzzing but not enough. So ..\n Let’s build a fuzzer, or multiple fuzzers?, and incremntally optimize it.  Building a fuzzer will be fun, but what fun with no bugs. Before trying to choose a target. I wanted to re-discover a previously known exploitable CVE through fuzzing, Then, create an exploit for it.\n Re-discovering a bug, and writing an exploit for it.  At this point I’d hope that I’ve made a few blog posts and gained a better understanding of fuzzers. Before continuing with fuzzers though, I will take a quick detour and comeback to them later.\nEmulation Emulation can be a very useful tool for fuzzing. As sometimes you want to fuzz a black-box target, a kernel, or something running on a different arch. However, this is just an execuse to make an emulator. I have always wanted to make an emulator for a simple archictucture.\n Making an emulator for something (NES?, idk will choose later).  I know that AFL has a QEMU mode (user only) for black-box targets. So while we’re at it with emulators. Let’s learn some stuff about QEMU, and maybe modify AFL to fuzz a binary running inside an emulated OS.\n Modify AFL, QEMU to fuzz a black-box target in a different OS (SerenityOS?)  I like SerenityOS and have learned a lot from Andreas Kling (@awesomekling) videos, so why not :D    Fuzzing part 2 (goal) in the second part of fuzzing, also known as finding a previously unknown exploitable bug through fuzzing (0-Day), and writing an exploit for it. I will try to do what it exactly says. I expect this to be the hardest part and I’m considering it a goal for 2021. The target doesn’t have to be big. The main reason I think this will be hard is because I struggle with choosing a target just for the sake of finding a bug. I usually find bugs in a target when I’m exploring it for a specific reason.\n Find a bug in “something” through fuzzing, and write an exploit for it.  Hypervisors Just putting this one out here. I want to learn more about hypervisors and make a simple one.\n Making a hypervisor.   This is it for now. Ideas could change, get extended, and more ideas might be added. Here hoping for a better year, plz 2021 🙏, and more learning.\nUPDATE: 2021 Also sucked. I don’t remember if I did any of the above.\nUPDATE: 2022 Uhhh …\n","wordCount":"555","inLanguage":"en","image":"https://wes4m.io/%3Cimage%20path/url%3E","datePublished":"2020-12-27T03:49:01-07:00","dateModified":"2020-12-27T03:49:01-07:00","author":{"@type":"Person","name":"wes4m"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://wes4m.io/posts/random_fun/"},"publisher":{"@type":"Organization","name":"wes4m","logo":{"@type":"ImageObject","url":"https://wes4m.io/favicon.ico"}}}</script>
 </head>
-<body id=top>
-<script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add('dark'):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove('dark'):window.matchMedia('(prefers-color-scheme: dark)').matches&&document.body.classList.add('dark')</script>
+<body class=dark id=top>
 <header class=header>
 <nav class=nav>
 <div class=logo>
 <a href=https://wes4m.io/ accesskey=h title="./ (Alt + H)">./</a>
 <div class=logo-switches>
-<button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-</button>
 </div>
 </div>
 <ul id=menu>
@@ -129,7 +127,7 @@ Fuzzing, Emulation, and Random low-level fun #1
 </article>
 </main>
 <footer class=footer>
-<span>&copy; 2022 <a href=https://wes4m.io/>wes4m</a></span>
+<span>&copy; 2023 <a href=https://wes4m.io/>wes4m</a></span>
 <span>
 Powered by
 <a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
@@ -140,6 +138,5 @@ Powered by
 </a>
 <script>let menu=document.getElementById('menu');menu&&(menu.scrollLeft=localStorage.getItem("menu-scroll-position"),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}),document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener("click",function(b){b.preventDefault();var a=this.getAttribute("href").substr(1);window.matchMedia('(prefers-reduced-motion: reduce)').matches?document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView({behavior:"smooth"}),a==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${a}`)})})</script>
 <script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script>
-<script>document.getElementById("theme-toggle").addEventListener("click",()=>{document.body.className.includes("dark")?(document.body.classList.remove('dark'),localStorage.setItem("pref-theme",'light')):(document.body.classList.add('dark'),localStorage.setItem("pref-theme",'dark'))})</script>
 </body>
 </html>
