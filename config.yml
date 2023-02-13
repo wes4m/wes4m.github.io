@@ -29,8 +29,8 @@ params:
   DateFormat: "January 2, 2006"
 
   # dark, light
-  defaultTheme: auto
-  disableThemeToggle: false
+  defaultTheme: dark
+  disableThemeToggle: true
 
   assets:
     # disableHLJS: true # to disable highlight.js
