@@ -41,9 +41,9 @@ There are many visual programming implementations out there that make approachin
   <img src="/images/dfp/blueprint.png">
 </p>
 
-It provides game developers with a way to program visually by connecting different nodes. Each node taking in some inputs, and/or options, doing something with it, then outputing the results. You can also implement your own reuse-able nodes using C++. It is apparently turing complete too.
+It provides game developers with a way to program visually by connecting different nodes. Each node taking in some inputs, and/or options, doing something with it, then outputting the results. You can also implement your own re-useable nodes using C++. It's apparently turing complete too.
 
- I wanted to make something similar for a project I'm working on, which brings us to: Data Flow Programming, Flow Based Programming, Node Graph Architecture, and a thousand other names.
+I wanted to make something similar for a project I'm working on, which brings us to: Data Flow Programming, Flow Based Programming, Node Graph Architecture, and a thousand other names.
 
 <center><iframe src="https://giphy.com/embed/WRQBXSCnEFJIuxktnw" width="480" height="250" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></center>
 
@@ -127,9 +127,7 @@ func executeNode(n node) (executed bool, outputs values) {
 }
 ```
 
-Given all the 
-
-Say we have this simple adder program that takes two inputs
+Given all the requirements. Say we have this simple adder program that takes two inputs
 
 <center><gif-player src="/images/dfp/1.gif" size="contain" style="width: 100%; height: 30vh;" prerender play speed="1"></gif-player></center>
 
@@ -163,9 +161,7 @@ for {
 } 
 ```
 
-Currently there is no way to pass around outputs, so this will not really execute. However, 
-
- This non-determinsitc entry-point/s approach should work for the given program. 
+Currently there is no way to pass around outputs, so this will not really execute. However, This non-determinsitc entry-point/s approach should work for the given program. 
 
 <center><gif-player src="/images/dfp/2.gif" size="contain" style="width: 100%; height: 30vh;" prerender play speed="1"></gif-player></center>
 
@@ -249,7 +245,7 @@ func (extbl *executionTable) setNodeOutputs(nodeId string, outputs values) {
 }
 ```
 
-Now when a node is executed, it returns an output, the executor then stores that output in the cycle execution table. Similarly, when a node being executed requires an input, the executor attempts to fetch that input from the cycle exectuion table. This abstraction made it easier to use a functional approach for exeucting the programs, which I find easier to reason about in the context of concurrent or multi-threaded applications, and overall less bugs to worry about. It also allowed me to experiment with other fun ideas later on.
+Now when a node is executed, it returns an output, the executor then stores that output in the cycle execution table. Similarly, when a node being executed requires an input, the executor attempts to fetch that input from the cycle execution table. This abstraction made it easier to use a functional approach for executing the programs, which I find easier to reason about in the context of concurrent or multi-threaded applications, and overall less bugs to worry about. It also allowed me to experiment with other fun ideas later on.
 
 <p align="center">
   <img src="/images/dfp/7.png">
@@ -326,7 +322,7 @@ So far this all works fine, I implemented a fake producer that runs in its own g
 
 ## Multiple Producers
 
-Since every producer runs in a separate goroutine, When it does produce if ever, is not guaranteed. I made it produce every N ms but this can change depending on the produer settings. 
+Since every producer runs in a separate goroutine, When it does produce if ever, is not guaranteed. I made it produce every N ms but this can change depending on the producer settings. 
 
 What If I wanted to have multiple producers with varying production rates? (this somewhat represent async I/O)
 
