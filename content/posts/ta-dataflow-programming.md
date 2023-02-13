@@ -452,7 +452,7 @@ Since each producer runs in a goroutine, attempting to modify a shared resource 
 
 ### Topological sorting
 
-After implementing all of this of-course :dumb:, I realized that since the whole thing is a DAG. We can just do a topologcal sort on it and execute the nodes in that order.
+After implementing all of this of-course :dumb:, I realized that since the whole thing is a DAG. We can just do a topologcal sort on it and execute the nodes in that order. Technically, what I've done is basically the same. the **executeNodeRecursive** function executes nodes in a DFS manner.
 
 ### Performance Remarks
 
