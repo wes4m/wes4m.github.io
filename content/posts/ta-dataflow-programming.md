@@ -450,6 +450,10 @@ func Start(nodes map[string]node) (stopChans []chan bool, ok bool) {
 
 Since each producer runs in a goroutine, attempting to modify a shared resource (producers synchroniser) some form of locking is necessary; that is why you see the mutex in the code.
 
+### Topological sorting
+
+After implementing all of this of-course :dumb:, I realized that since the whole thing is a DAG. We can just do a topologcal sort on it and execute the nodes in that order.
+
 ### Performance Remarks
 
 Why Golang? Initially, I started the project (which is still a WIP) with Python for the backend, TypeScript for the frontend. Keep In mind that although I'm showing a simple loop producer in here. A producer can be anything, including some heavy I/O operations. So, when stress testing, Python's GIL stepped in. I converted my implementation to be multiprocessing which was much better. But, overhead for memory, and initial start time for each producer (e.g when I wanted to restart thousands of them) was a major bottleneck.
