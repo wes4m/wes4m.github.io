@@ -5,7 +5,16 @@
     <link>https://wes4m.io/</link>
     <description>Recent content on wes4m</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Fri, 10 Feb 2023 22:59:52 +0300</lastBuildDate><atom:link href="https://wes4m.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 18 May 2023 23:02:53 +0300</lastBuildDate><atom:link href="https://wes4m.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Demo of 20230609.zip</title>
+      <link>https://wes4m.io/posts/demo-of-20230609/</link>
+      <pubDate>Thu, 18 May 2023 23:02:53 +0300</pubDate>
+      
+      <guid>https://wes4m.io/posts/demo-of-20230609/</guid>
+      <description>Shows how google new .zip TLD can be abused.</description>
+    </item>
+    
     <item>
       <title>Side Project #9837: Visual Nodes Scripting</title>
       <link>https://wes4m.io/posts/ta-dataflow-programming/</link>

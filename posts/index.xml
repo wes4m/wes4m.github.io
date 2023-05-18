@@ -10,8 +10,22 @@
         
         
         
-        <lastBuildDate>Fri, 10 Feb 2023 22:59:52</lastBuildDate>
+        <lastBuildDate>Thu, 18 May 2023 23:02:53</lastBuildDate>
         <atom:link href="https://wes4m.io/posts/index.xml" rel="self" type="application/rss+xml" />
+        <item>
+            <title>Demo of 20230609.zip</title>
+            <link>https://wes4m.io/posts/demo-of-20230609/</link>
+            <pubDate>Thu, May 18 2023</pubDate>
+            
+            <guid>https://wes4m.io/posts/demo-of-20230609/</guid>
+            <description>Google launched 8 new TLDs on May 3rd, 2023 for EAP including .zip (Link) The security community had fun coming with all kinds of phishing ideas using it.
+I made a tool that demonstrated some of this https://20230609.zip. More details and explinations are found in its homepage. The following is just one example of what can be done.
+Github repos Many github repos include scripts such as build.sh docker-build.sh install.sh &amp;hellip;</description>
+            
+            <category>first</category>
+            
+        </item>
+        
         <item>
             <title>Side Project #9837: Visual Nodes Scripting</title>
             <link>https://wes4m.io/posts/ta-dataflow-programming/</link>
