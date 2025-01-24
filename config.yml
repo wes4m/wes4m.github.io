@@ -1,6 +1,6 @@
 baseURL: "https://wes4m.io/"
 title: wes4m
-paginate: 4
+paginate: 6
 theme: hugo-PaperMod
 
 enableRobotsTXT: true
@@ -24,13 +24,13 @@ params:
   env: production 
 
   title: wes4m
-  description: "Blogging about cybersecurity, CTFs, dev and stuff"
-  keywords: [Blog, Portfolio, Cybersecurity, CTF, Reverse Engineering, PWN, WEB, Dev, Development]
+  description: "Software, Cybersec, and random stuff"
+  keywords: [Blog, Software Engineering, Cybersecurity, CTF, Reverse Engineering, Dev, Development, Random]
   DateFormat: "January 2, 2006"
 
   # dark, light
-  defaultTheme: dark
-  disableThemeToggle: true
+  defaultTheme: light
+  disableThemeToggle: false
 
   assets:
     # disableHLJS: true # to disable highlight.js
@@ -55,7 +55,7 @@ params:
   # home-info mode
   homeInfoParams:
     Title: "wes4m"
-    Content: "Blogging about cybersecurity, CTFs, dev and stuff"
+    Content: "Software engineering, Cybersecurity, and random stuff"
 
   socialIcons:
     - name: twitter

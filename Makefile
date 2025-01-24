@@ -1,4 +1,4 @@
-image_name = klakegg/hugo:0.95.0-ext
+image_name = klakegg/hugo:0.91.2-ext
 
 docker_run = docker run \
 	--rm \
