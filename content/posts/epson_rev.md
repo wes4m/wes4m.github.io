@@ -1,5 +1,5 @@
 ---
-title: "Reverse engineering thermal printers"
+title: "Reverse Engineering Thermal Printers"
 date: 2022-09-02T21:29:19+03:00
 draft: false
 description: ""
