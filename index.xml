@@ -5,14 +5,14 @@
     <link>https://wes4m.io/</link>
     <description>Recent content on wes4m</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Thu, 18 May 2023 23:02:53 +0300</lastBuildDate><atom:link href="https://wes4m.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 03 Jan 2025 06:12:33 -0700</lastBuildDate><atom:link href="https://wes4m.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Demo of 20230609.zip</title>
-      <link>https://wes4m.io/posts/demo-of-20230609/</link>
-      <pubDate>Thu, 18 May 2023 23:02:53 +0300</pubDate>
+      <title>Lessons from a $5 VPS, Bad Design, and a Traffic Spike</title>
+      <link>https://wes4m.io/posts/5vps/</link>
+      <pubDate>Fri, 03 Jan 2025 06:12:33 -0700</pubDate>
       
-      <guid>https://wes4m.io/posts/demo-of-20230609/</guid>
-      <description>Shows how google new .zip TLD can be abused.</description>
+      <guid>https://wes4m.io/posts/5vps/</guid>
+      <description>A year ago I duct-taped together, in a couple of days, an app for fun as an experiment. Without putting much thought into its design or scaleability. I then put it to run on a tiny ~$5 VPS. Not expecting more than a few users. It went on to gain users very slowly for a year. Until, fast forward to last month, STUDI&amp;rsquo;s traffic and users spiked nearly 20x in just a few days, and reached 2nd on AppStore&amp;rsquo;s education charts.</description>
     </item>
     
     <item>
@@ -25,7 +25,7 @@
     </item>
     
     <item>
-      <title>Reverse engineering thermal printers</title>
+      <title>Reverse Engineering Thermal Printers</title>
       <link>https://wes4m.io/posts/epson_rev/</link>
       <pubDate>Fri, 02 Sep 2022 21:29:19 +0300</pubDate>
       
@@ -82,6 +82,15 @@ Thermal printers use a universal protocol to send/receive printing commands. Thi
       <guid>https://wes4m.io/posts/pe_infection/</guid>
       <description>توجد طرق إنتشار عديدة للبرمجيات الخبيثة عبر ثغرات الشبكات وغيرها. ولكن من الطرق المهمل ذكرها في المجتمع السيبراني العربي ما أكتب عنه هذا المقال. أتمنى أن يعود بفائدة للقارئ في حماية نفسه من مخاطر إنتشار البرمجيات الخبيثة. طرق الحماية في نهاية المقال. كما سأشرح بإختصار آلية عملها للمهتمين فالأمن السايبراني.
 ماهي عدوى الملفات التنفيذية أو PE Infection هي من أقدم الطرق المستخدمة في نشر الملفات الخبيثة من باك دورز أو فايروسات وغيره في الجهاز.</description>
+    </item>
+    
+    <item>
+      <title>Demo of 20230609.zip</title>
+      <link>https://wes4m.io/posts/demo-of-20230609/</link>
+      <pubDate>Thu, 18 Jan 2018 23:02:53 +0300</pubDate>
+      
+      <guid>https://wes4m.io/posts/demo-of-20230609/</guid>
+      <description>Shows how google new .zip TLD can be abused.</description>
     </item>
     
   </channel>

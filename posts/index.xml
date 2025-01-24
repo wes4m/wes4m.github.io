@@ -10,19 +10,15 @@
         
         
         
-        <lastBuildDate>Thu, 18 May 2023 23:02:53</lastBuildDate>
+        <lastBuildDate>Fri, 03 Jan 2025 06:12:33</lastBuildDate>
         <atom:link href="https://wes4m.io/posts/index.xml" rel="self" type="application/rss+xml" />
         <item>
-            <title>Demo of 20230609.zip</title>
-            <link>https://wes4m.io/posts/demo-of-20230609/</link>
-            <pubDate>Thu, May 18 2023</pubDate>
+            <title>Lessons from a $5 VPS, Bad Design, and a Traffic Spike</title>
+            <link>https://wes4m.io/posts/5vps/</link>
+            <pubDate>Fri, Jan 3 2025</pubDate>
             
-            <guid>https://wes4m.io/posts/demo-of-20230609/</guid>
-            <description>Google launched 8 new TLDs on May 3rd, 2023 for EAP including .zip (Link) The security community had fun coming with all kinds of phishing ideas using it.
-I made a tool that demonstrated some of this https://20230609.zip. More details and explinations are found in its homepage. The following is just one example of what can be done.
-Github repos Many github repos include scripts such as build.sh docker-build.sh install.sh &amp;hellip;</description>
-            
-            <category>first</category>
+            <guid>https://wes4m.io/posts/5vps/</guid>
+            <description>A year ago I duct-taped together, in a couple of days, an app for fun as an experiment. Without putting much thought into its design or scaleability. I then put it to run on a tiny ~$5 VPS. Not expecting more than a few users. It went on to gain users very slowly for a year. Until, fast forward to last month, STUDI&amp;rsquo;s traffic and users spiked nearly 20x in just a few days, and reached 2nd on AppStore&amp;rsquo;s education charts.</description>
             
         </item>
         
@@ -43,7 +39,7 @@ I wanted to make something similar for a project I&amp;rsquo;m working on, which
         </item>
         
         <item>
-            <title>Reverse engineering thermal printers</title>
+            <title>Reverse Engineering Thermal Printers</title>
             <link>https://wes4m.io/posts/epson_rev/</link>
             <pubDate>Fri, Sep 2 2022</pubDate>
             
@@ -134,6 +130,18 @@ Thermal printers use a universal protocol to send/receive printing commands. Thi
             <category>Malware</category>
             
             <category>Windows</category>
+            
+        </item>
+        
+        <item>
+            <title>Demo of 20230609.zip</title>
+            <link>https://wes4m.io/posts/demo-of-20230609/</link>
+            <pubDate>Thu, Jan 18 2018</pubDate>
+            
+            <guid>https://wes4m.io/posts/demo-of-20230609/</guid>
+            <description>Google launched 8 new TLDs on May 3rd, 2023 for EAP including .zip (Link) The security community had fun coming with all kinds of phishing ideas using it.
+I made a tool that demonstrated some of this https://20230609.zip. More details and explinations are found in its homepage. The following is just one example of what can be done.
+Github repos Many github repos include scripts such as build.sh docker-build.sh install.sh &amp;hellip;</description>
             
         </item>
         

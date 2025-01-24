@@ -2,20 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://wes4m.io/posts/demo-of-20230609/</loc>
-    <lastmod>2023-05-18T23:02:53+03:00</lastmod>
-  </url><url>
-    <loc>https://wes4m.io/tags/first/</loc>
-    <lastmod>2023-05-18T23:02:53+03:00</lastmod>
+    <loc>https://wes4m.io/posts/5vps/</loc>
+    <lastmod>2025-01-03T06:12:33-07:00</lastmod>
   </url><url>
     <loc>https://wes4m.io/posts/</loc>
-    <lastmod>2023-05-18T23:02:53+03:00</lastmod>
-  </url><url>
-    <loc>https://wes4m.io/tags/</loc>
-    <lastmod>2023-05-18T23:02:53+03:00</lastmod>
+    <lastmod>2025-01-03T06:12:33-07:00</lastmod>
   </url><url>
     <loc>https://wes4m.io/</loc>
-    <lastmod>2023-05-18T23:02:53+03:00</lastmod>
+    <lastmod>2025-01-03T06:12:33-07:00</lastmod>
   </url><url>
     <loc>https://wes4m.io/tags/dev/</loc>
     <lastmod>2023-02-10T22:59:52+03:00</lastmod>
@@ -24,6 +18,9 @@
     <lastmod>2023-02-10T22:59:52+03:00</lastmod>
   </url><url>
     <loc>https://wes4m.io/posts/ta-dataflow-programming/</loc>
+    <lastmod>2023-02-10T22:59:52+03:00</lastmod>
+  </url><url>
+    <loc>https://wes4m.io/tags/</loc>
     <lastmod>2023-02-10T22:59:52+03:00</lastmod>
   </url><url>
     <loc>https://wes4m.io/tags/network/</loc>
@@ -73,6 +70,9 @@
   </url><url>
     <loc>https://wes4m.io/posts/pe_infection/</loc>
     <lastmod>2018-08-12T04:51:01-07:00</lastmod>
+  </url><url>
+    <loc>https://wes4m.io/posts/demo-of-20230609/</loc>
+    <lastmod>2018-01-18T23:02:53+03:00</lastmod>
   </url><url>
     <loc>https://wes4m.io/categories/</loc>
   </url>
