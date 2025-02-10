@@ -5,7 +5,17 @@
     <link>https://wes4m.io/</link>
     <description>Recent content on wes4m</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Fri, 03 Jan 2025 06:12:33 -0700</lastBuildDate><atom:link href="https://wes4m.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 21 Jan 2025 02:47:01 -0700</lastBuildDate><atom:link href="https://wes4m.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hybrid Migration: Native to React Native</title>
+      <link>https://wes4m.io/posts/rn-migration/</link>
+      <pubDate>Tue, 21 Jan 2025 02:47:01 -0700</pubDate>
+      
+      <guid>https://wes4m.io/posts/rn-migration/</guid>
+      <description>At Ejaro, we have been transitioning to React Native over the past two years while continuing to build new features and growing our app. Instead of undertaking a complete rewrite from scratch, we adopted a hybrid approach. This strategy has been successfully implemented by companies like Shopify and others. In this post I go over some of the decision taking approaches, challenges, and solutions we implemented.
+Why Move to React Native?</description>
+    </item>
+    
     <item>
       <title>Lessons from a $5 VPS, Bad Design, and a Traffic Spike</title>
       <link>https://wes4m.io/posts/5vps/</link>
