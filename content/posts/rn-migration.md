@@ -1,7 +1,7 @@
 ---
 title: "Hybrid Migration: Native to React Native"
 date: 2025-01-21 02:47:01 -0700
-draft: true
+draft: false
 description: ""
 # weight: 1
 aliases: ["/rn-migration"]
@@ -33,7 +33,7 @@ cover:
     hidden: true # only hide on current single page
 ---
 
-At [Ejaro](https://github.com/Ejaro), we have been transitioning to React Native over the past year while continuing to build new features and growing our app. Instead of undertaking a complete rewrite from scratch, we adopted a hybrid approach. This strategy has been successfully implemented by companies like [Shopify](https://shopify.engineering/migrating-our-largest-mobile-app-to-react-native) and others. In this post I go over some of the decision taking approaches, challenges, and solutions we implemented.
+At [Ejaro](https://github.com/Ejaro), we have been transitioning to React Native over the past two years while continuing to build new features and growing our app. Instead of undertaking a complete rewrite from scratch, we adopted a hybrid approach. This strategy has been successfully implemented by companies like [Shopify](https://shopify.engineering/migrating-our-largest-mobile-app-to-react-native) and others. In this post I go over some of the decision taking approaches, challenges, and solutions we implemented.
 
 ## Why Move to React Native?
 
@@ -243,7 +243,9 @@ private override init() {
 
 ## Notifications
 
-We're already managing notifications on the native side—which we need to keep there—we also need to handle them in React Native. For example, this allows us to refresh a screen or perform other actions when a notification is received. We addressed this by emitting events from the native to React Native ([React Native Communication](https://reactnative.dev/docs/legacy/native-components-android#events)) whenever we get a notification, with the goal of eventually moving all notification handling to React Native. Of course, this approach doesn't give us full control over notification handling since we're not directly influencing how notifications are managed. However, it serves as a temporary solution that meets our current use cases effectively.
+We're already managing notifications on the native side—which we need to keep there—we also need to handle them in React Native. For example, this allows us to refresh a screen or perform other actions when a notification is received. We addressed this by emitting events from the native to React Native ([React Native Communication](https://reactnative.dev/docs/legacy/native-components-android#events)) whenever we get a notification, with the goal of eventually moving all notification handling to React Native. Of course, this approach doesn't give us full control over notification handling since we're not directly influencing how notifications are managed. However, it serves as a temporary solution that meets our current use cases effectively. 
+
+**Note:** To save yourself time and frustration, always test notifications on physical devices. Simulators often have numerous issues and inconsistencies, regardless of what Apple and Google's documentation suggests.
 
 ## State Sharing
 
@@ -254,8 +256,6 @@ There are several ways to approach this. We can use additional bridge methods or
 We also stored some of the state locally on the device for both native and React Native, using `UserDefaults` on iOS for example. For these states, we directly access and modify them with packages such as `react-native-default-preference`. 
 
 ## Extra
-
-A few points worth mentioning
 
 ### Android Activity vs Fragments
 
@@ -273,6 +273,17 @@ We needed to handle/override the native go back and swipe to go back events when
 
 Depending on the setup, some authentication checks will need to be performed manually rather than being managed by the navigator itself. This wasn’t a big deal for us, as we mainly encountered it during the period when we had both native and React Native screens in the bottom tab bar at the same time.
 
+### Keyboad Avoid Issues
+
+This isn't specific to migration, but if you're taking the hybrid route, you're likely not using Expo from the start. That means you'll need to handle keyboard avoiding views manually. This turned out to be a major challenge due to the differences in behavior between Android and iOS, especially with bottom sheets.
+
+The only approach that worked for us was setting `android:windowSoftInputMode="adjustPan"` on our React container for Android and handling `KeyboardAvoidingView` behavior with:
+`Platform.OS === 'ios' ? 'padding' : undefined`. Along with using keyboard show/hide events where necessary.
+
+Another promising solution we haven't explored yet is [react-native-keyboard-controller](https://github.com/kirillzyusko/react-native-keyboard-controller). Additionally, [Expo'sdocumentation](https://docs.expo.dev/guides/keyboard-handling/) on keyboard handling is a useful resource.
+
+
+
 ## Timeline and Metrics
 
 - **Initial discussions & research**: August 14, 2023
@@ -280,7 +291,7 @@ Depending on the setup, some authentication checks will need to be performed man
 - **Major scaffolding and shell setup done**: Sept 28, 2023
 - **First Internal build with React Native shipped for testing**: October 28, 2023
 - **First build with React Native shipped to production**: May 27, 2024
-- **Full migration to React Native**: TODO/TBA
+- **Full migration to React Native**: Feb 10, 2025
 
 ### Frequency of releases before and after shipping React Native
 
