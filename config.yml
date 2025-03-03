@@ -54,14 +54,16 @@ params:
 
   # home-info mode
   homeInfoParams:
-    Title: "wes4m"
-    Content: "Software engineering, Cybersecurity, and random stuff"
+    Title: "Wesam Alzahir"
+    Content: "Software engineering, Cybersecurity, and random stuff."
 
   socialIcons:
-    - name: twitter
-      url: "https://twitter.com/zawessam"
     - name: github
       url: "https://github.com/wes4m"
+    - name: twitter
+      url: "https://twitter.com/zawessam"
+    - name: linkedin
+      url: https://www.linkedin.com/in/walzahir/
 
   cover:
     # hide everywhere but not in structured data
